@@ -5,13 +5,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SecurityProvider } from "@/components/SecurityProvider";
+import { AuthProvider } from "@/hooks/useAuth";
 import Community from "./pages/Community";
 import JobOpportunities from "./pages/JobOpportunities";
 import Blog from "./pages/Blog";
 import About from "./pages/About";
+import Auth from "./pages/Auth";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
+import CookiePolicy from "./pages/CookiePolicy";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 import { generateCSPContent } from "@/utils/security";
@@ -33,6 +36,13 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useEffect(() => {
+    // Add Google AdSense script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7512720812981009";
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+
     // Set security headers via meta tags
     const securityHeaders = [
       { name: 'X-Content-Type-Options', content: 'nosniff' },
@@ -59,27 +69,36 @@ const App = () => {
     if (!import.meta.env.VITE_APP_NAME) {
       console.warn('VITE_APP_NAME not set in environment variables');
     }
+
+    return () => {
+      // Cleanup script on unmount
+      document.head.removeChild(script);
+    };
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <SecurityProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Community />} />
-              <Route path="/jobs" element={<JobOpportunities />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/community-guidelines" element={<CommunityGuidelines />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Community />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/jobs" element={<JobOpportunities />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </SecurityProvider>
     </QueryClientProvider>
   );

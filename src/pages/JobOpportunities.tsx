@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,8 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Briefcase, MapPin, Clock, DollarSign, Users, Search, Filter } from "lucide-react";
+import JobDiscussion from "@/components/JobDiscussion";
+import AdSenseAd from "@/components/AdSenseAd";
 
 const JobOpportunities = () => {
+  const [selectedJobForDiscussion, setSelectedJobForDiscussion] = useState<string | null>(null);
+
   const jobStats = [
     { label: "Active Jobs", value: "1,247", icon: Briefcase },
     { label: "Companies", value: "384", icon: Users },
@@ -17,6 +22,7 @@ const JobOpportunities = () => {
 
   const jobs = [
     {
+      id: "job-1",
       title: "Senior Full Stack Developer",
       company: "TechFlow Inc.",
       location: "Remote",
@@ -27,6 +33,7 @@ const JobOpportunities = () => {
       posted: "2 days ago"
     },
     {
+      id: "job-2",
       title: "Product Manager",
       company: "InnovateNow",
       location: "New York, NY",
@@ -37,6 +44,7 @@ const JobOpportunities = () => {
       posted: "3 days ago"
     },
     {
+      id: "job-3",
       title: "UX/UI Designer",
       company: "DesignStudio Pro",
       location: "San Francisco, CA",
@@ -146,6 +154,12 @@ const JobOpportunities = () => {
                 </CardContent>
               </Card>
 
+              {/* AdSense Ad in Sidebar */}
+              <AdSenseAd 
+                adSlot="1234567890"
+                style={{ marginBottom: '1rem' }}
+              />
+
               <Button className="w-full mb-4 bg-gradient-to-r from-green-600 to-emerald-700">
                 Post a Job
               </Button>
@@ -164,50 +178,79 @@ const JobOpportunities = () => {
 
               <div className="space-y-6">
                 {jobs.map((job, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                            {job.title}
-                          </h3>
-                          <p className="text-lg text-blue-600 font-medium">{job.company}</p>
+                  <div key={index}>
+                    <Card className="hover:shadow-lg transition-shadow">
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                              {job.title}
+                            </h3>
+                            <p className="text-lg text-blue-600 font-medium">{job.company}</p>
+                          </div>
+                          <span className="text-sm text-gray-500">{job.posted}</span>
                         </div>
-                        <span className="text-sm text-gray-500">{job.posted}</span>
+                        
+                        <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {job.location}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {job.type}
+                          </div>
+                          <div className="flex items-center">
+                            <DollarSign className="h-4 w-4 mr-1" />
+                            {job.salary}
+                          </div>
+                        </div>
+                        
+                        <p className="text-gray-700 mb-4">{job.description}</p>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex flex-wrap gap-2">
+                            {job.tags.map((tag, tagIndex) => (
+                              <Badge key={tagIndex} variant="secondary">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline"
+                              onClick={() => setSelectedJobForDiscussion(
+                                selectedJobForDiscussion === job.id ? null : job.id
+                              )}
+                            >
+                              Discuss
+                            </Button>
+                            <Button>Apply Now</Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Job Discussion */}
+                    {selectedJobForDiscussion === job.id && (
+                      <div className="mt-4">
+                        <JobDiscussion
+                          jobId={job.id}
+                          jobTitle={job.title}
+                        />
                       </div>
-                      
-                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-600">
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {job.location}
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {job.type}
-                        </div>
-                        <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          {job.salary}
-                        </div>
+                    )}
+
+                    {/* AdSense Ad between job listings */}
+                    {index === 1 && (
+                      <div className="my-6">
+                        <AdSenseAd 
+                          adSlot="0987654321"
+                          adFormat="rectangle"
+                        />
                       </div>
-                      
-                      <p className="text-gray-700 mb-4">{job.description}</p>
-                      
-                      <div className="flex justify-between items-center">
-                        <div className="flex flex-wrap gap-2">
-                          {job.tags.map((tag, tagIndex) => (
-                            <Badge key={tagIndex} variant="secondary">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline">Discuss</Button>
-                          <Button>Apply Now</Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
