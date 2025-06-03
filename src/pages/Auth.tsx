@@ -56,18 +56,18 @@ const Auth = () => {
       return;
     }
 
-    // Validate age (must be 18+)
+    // Validate age (must be 16+)
     const birthDate = new Date(dateOfBirth);
     const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+      calculatedAge--;
     }
     
-    if (age < 18) {
-      alert("You must be at least 18 years old to register.");
+    if (calculatedAge < 16) {
+      alert("You must be at least 16 years old to register.");
       return;
     }
 
@@ -215,7 +215,7 @@ const Auth = () => {
                         <Checkbox 
                           id="terms" 
                           checked={acceptedTerms}
-                          onCheckedChange={setAcceptedTerms}
+                          onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
                         />
                         <Label htmlFor="terms" className="text-xs leading-relaxed">
                           I accept the <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
@@ -226,7 +226,7 @@ const Auth = () => {
                         <Checkbox 
                           id="privacy" 
                           checked={acceptedPrivacy}
-                          onCheckedChange={setAcceptedPrivacy}
+                          onCheckedChange={(checked) => setAcceptedPrivacy(checked === true)}
                         />
                         <Label htmlFor="privacy" className="text-xs leading-relaxed">
                           I accept the <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
@@ -237,7 +237,7 @@ const Auth = () => {
                         <Checkbox 
                           id="community" 
                           checked={acceptedCommunity}
-                          onCheckedChange={setAcceptedCommunity}
+                          onCheckedChange={(checked) => setAcceptedCommunity(checked === true)}
                         />
                         <Label htmlFor="community" className="text-xs leading-relaxed">
                           I accept the <a href="/community-guidelines" className="text-blue-600 hover:underline">Community Guidelines</a>
@@ -248,10 +248,10 @@ const Auth = () => {
                         <Checkbox 
                           id="age" 
                           checked={acceptedAge}
-                          onCheckedChange={setAcceptedAge}
+                          onCheckedChange={(checked) => setAcceptedAge(checked === true)}
                         />
                         <Label htmlFor="age" className="text-xs leading-relaxed">
-                          I confirm I am 18 years or older
+                          I confirm I am 16 years or older
                         </Label>
                       </div>
                     </div>

@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, MessageCircle, TrendingUp, Users, Eye, Calendar, Share2 } from "lucide-react";
+import { Heart, MessageCircle, TrendingUp, Users, Eye, Calendar, Share2, Briefcase, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Community = () => {

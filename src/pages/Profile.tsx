@@ -17,6 +17,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Camera, MapPin, Calendar, Users, Heart, Settings } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
+interface PrivacySettings {
+  show_age: boolean;
+  show_location: boolean;
+  allow_friend_requests: boolean;
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,14 +32,14 @@ const Profile = () => {
     last_name: '',
     bio: '',
     location: '',
-    interests: [],
-    age_search_min: 18,
+    interests: [] as string[],
+    age_search_min: 16,
     age_search_max: 99,
     privacy_settings: {
       show_age: true,
       show_location: false,
       allow_friend_requests: true
-    }
+    } as PrivacySettings
   });
 
   useEffect(() => {
@@ -65,9 +71,9 @@ const Profile = () => {
         bio: data.bio || '',
         location: data.location || '',
         interests: data.interests || [],
-        age_search_min: data.age_search_min || 18,
+        age_search_min: data.age_search_min || 16,
         age_search_max: data.age_search_max || 99,
-        privacy_settings: data.privacy_settings || {
+        privacy_settings: (data.privacy_settings as PrivacySettings) || {
           show_age: true,
           show_location: false,
           allow_friend_requests: true
@@ -282,12 +288,12 @@ const Profile = () => {
                           <Input
                             id="ageMin"
                             type="number"
-                            min="18"
+                            min="16"
                             max="99"
                             value={profile.age_search_min}
                             onChange={(e) => setProfile(prev => ({ 
                               ...prev, 
-                              age_search_min: parseInt(e.target.value) || 18 
+                              age_search_min: parseInt(e.target.value) || 16 
                             }))}
                           />
                         </div>
@@ -296,7 +302,7 @@ const Profile = () => {
                           <Input
                             id="ageMax"
                             type="number"
-                            min="18"
+                            min="16"
                             max="99"
                             value={profile.age_search_max}
                             onChange={(e) => setProfile(prev => ({ 

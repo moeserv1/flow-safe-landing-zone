@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Users, MessageCircle, X, Minimize2, Maximize2, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,16 +45,8 @@ const FriendsChat = () => {
     const { data, error } = await supabase
       .from('friendships')
       .select(`
-        addressee:addressee_id (
-          id,
-          full_name,
-          avatar_url
-        ),
-        requester:requester_id (
-          id,
-          full_name,
-          avatar_url
-        )
+        addressee_id,
+        requester_id
       `)
       .eq('status', 'accepted')
       .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
@@ -65,11 +56,11 @@ const FriendsChat = () => {
       return;
     }
 
-    // Get friend profiles and their presence status
+    // Get friend IDs
     const friendIds = data?.map(friendship => {
-      return friendship.requester.id === user.id 
-        ? friendship.addressee.id 
-        : friendship.requester.id;
+      return friendship.requester_id === user.id 
+        ? friendship.addressee_id 
+        : friendship.requester_id;
     }) || [];
 
     if (friendIds.length > 0) {
@@ -87,7 +78,7 @@ const FriendsChat = () => {
         const presence = presenceData?.find(p => p.user_id === profile.id);
         return {
           ...profile,
-          status: presence?.status || 'offline',
+          status: (presence?.status as 'online' | 'away' | 'busy' | 'offline') || 'offline',
           last_seen: presence?.last_seen || new Date().toISOString()
         };
       }) || [];
