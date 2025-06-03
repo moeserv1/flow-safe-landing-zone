@@ -1,192 +1,242 @@
 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Shield, Heart, Users, AlertTriangle, Eye, Flag } from "lucide-react";
 
 const CommunityGuidelines = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
-      <div className="pt-24 pb-16 bg-white">
+      
+      <div className="pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Community Guidelines
-          </h1>
-          <p className="text-gray-600 mb-8">Creating a safe, respectful, and inclusive environment for everyone</p>
-
-          <div className="prose prose-lg max-w-none">
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">Our Community Values</h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                LifeFlow is built on the principles of respect, safety, and authentic connection. 
-                We believe that everyone deserves to feel welcome and secure in our community.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-2">🤝 Respect</h3>
-                  <p className="text-blue-700 text-sm">Treat all members with dignity and kindness</p>
-                </div>
-                <div className="bg-green-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-2">🛡️ Safety</h3>
-                  <p className="text-green-700 text-sm">Maintain a secure environment for everyone</p>
-                </div>
-                <div className="bg-purple-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-purple-800 mb-2">💙 Authenticity</h3>
-                  <p className="text-purple-700 text-sm">Be genuine in your interactions</p>
-                </div>
+          <div className="text-center mb-12">
+            <div className="flex justify-center mb-4">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-3 rounded-full">
+                <Heart className="h-8 w-8 text-white" />
               </div>
-            </section>
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Guidelines</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              LifeFlow is a place where hearts connect. These guidelines help us maintain a positive, 
+              safe, and welcoming environment for everyone.
+            </p>
+          </div>
 
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">✅ What We Encourage</h2>
-              <ul className="list-disc pl-6 text-gray-700 space-y-3">
-                <li><strong>Respectful Communication:</strong> Use kind and thoughtful language in all interactions</li>
-                <li><strong>Constructive Discussions:</strong> Share ideas and engage in meaningful conversations</li>
-                <li><strong>Support Others:</strong> Offer help, encouragement, and positive feedback</li>
-                <li><strong>Report Issues:</strong> Help us maintain safety by reporting inappropriate content</li>
-                <li><strong>Celebrate Diversity:</strong> Embrace different perspectives, backgrounds, and experiences</li>
-                <li><strong>Be Authentic:</strong> Share genuine thoughts and experiences</li>
-                <li><strong>Follow Guidelines:</strong> Help maintain a positive environment for all</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">❌ What's Not Allowed</h2>
-              
-              <div className="space-y-6">
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h3 className="font-semibold text-red-800 mb-2">Harassment & Bullying</h3>
-                  <ul className="text-gray-700 space-y-1 text-sm">
-                    <li>• Targeted harassment or intimidation</li>
-                    <li>• Cyberbullying or persistent unwanted contact</li>
-                    <li>• Doxxing or sharing personal information without consent</li>
-                  </ul>
+          <div className="space-y-8">
+            {/* Core Values */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Heart className="h-6 w-6 text-red-500" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Our Core Values</h2>
                 </div>
-
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h3 className="font-semibold text-red-800 mb-2">Hate Speech & Discrimination</h3>
-                  <ul className="text-gray-700 space-y-1 text-sm">
-                    <li>• Content that promotes hatred based on race, ethnicity, religion, gender, sexuality, or disability</li>
-                    <li>• Discriminatory language or slurs</li>
-                    <li>• Content that dehumanizes or marginalizes groups</li>
-                  </ul>
-                </div>
-
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h3 className="font-semibold text-red-800 mb-2">Inappropriate Content</h3>
-                  <ul className="text-gray-700 space-y-1 text-sm">
-                    <li>• Adult content or sexually explicit material</li>
-                    <li>• Graphic violence or disturbing imagery</li>
-                    <li>• Content involving minors in inappropriate contexts</li>
-                  </ul>
-                </div>
-
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h3 className="font-semibold text-red-800 mb-2">Illegal Activities</h3>
-                  <ul className="text-gray-700 space-y-1 text-sm">
-                    <li>• Promoting or facilitating illegal activities</li>
-                    <li>• Sharing copyrighted content without permission</li>
-                    <li>• Fraud, scams, or deceptive practices</li>
-                  </ul>
-                </div>
-
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h3 className="font-semibold text-red-800 mb-2">Spam & Misuse</h3>
-                  <ul className="text-gray-700 space-y-1 text-sm">
-                    <li>• Excessive posting or repetitive content</li>
-                    <li>• Unauthorized advertising or promotion</li>
-                    <li>• Creating fake accounts or impersonating others</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">🚨 Reporting & Enforcement</h2>
-              <div className="bg-yellow-50 p-6 rounded-lg mb-4">
-                <h3 className="font-semibold text-yellow-800 mb-2">How to Report</h3>
-                <p className="text-yellow-700 text-sm mb-2">
-                  If you encounter content or behavior that violates our guidelines:
-                </p>
-                <ul className="text-yellow-700 text-sm space-y-1">
-                  <li>• Use the report button on any post or message</li>
-                  <li>• Contact our moderation team at moderation@lifeflow.com</li>
-                  <li>• For urgent safety concerns, email safety@lifeflow.com</li>
-                </ul>
-              </div>
-
-              <h3 className="font-semibold text-gray-800 mb-3">Enforcement Actions</h3>
-              <p className="text-gray-700 mb-4">Violations may result in:</p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-2">
-                <li><strong>Warning:</strong> First-time minor violations</li>
-                <li><strong>Content Removal:</strong> Violating posts will be deleted</li>
-                <li><strong>Temporary Suspension:</strong> Account restrictions for repeated violations</li>
-                <li><strong>Permanent Ban:</strong> Severe or repeated violations</li>
-                <li><strong>Legal Action:</strong> For illegal activities or serious harm</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">🛡️ Safety Features</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-3">Privacy Controls</h3>
-                  <ul className="text-blue-700 text-sm space-y-1">
-                    <li>• Block and report users</li>
-                    <li>• Control who can contact you</li>
-                    <li>• Manage your visibility settings</li>
-                  </ul>
-                </div>
-                <div className="bg-green-50 p-6 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-3">Moderation Tools</h3>
-                  <ul className="text-green-700 text-sm space-y-1">
-                    <li>• AI-powered content screening</li>
-                    <li>• 24/7 human moderation team</li>
-                    <li>• Community reporting system</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">📞 Need Help?</h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                Our community support team is here to help. Don't hesitate to reach out if you have questions 
-                about these guidelines or need assistance with any community-related issues.
-              </p>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">General Support</h4>
-                    <p className="text-gray-700 text-sm">support@lifeflow.com</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">Safety First</h3>
+                    <p className="text-sm text-gray-600">We prioritize the safety and security of all our community members.</p>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Safety Concerns</h4>
-                    <p className="text-gray-700 text-sm">safety@lifeflow.com</p>
+                  <div className="text-center">
+                    <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">Respect & Inclusion</h3>
+                    <p className="text-sm text-gray-600">We celebrate diversity and treat everyone with dignity and respect.</p>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Content Moderation</h4>
-                    <p className="text-gray-700 text-sm">moderation@lifeflow.com</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Legal Issues</h4>
-                    <p className="text-gray-700 text-sm">legal@lifeflow.com</p>
+                  <div className="text-center">
+                    <Heart className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                    <h3 className="font-medium mb-2">Authentic Connections</h3>
+                    <p className="text-sm text-gray-600">We encourage genuine interactions and meaningful relationships.</p>
                   </div>
                 </div>
-              </div>
-            </section>
+              </CardContent>
+            </Card>
 
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Thank you for helping us build a positive community! 💙
-              </h3>
-              <p className="text-gray-700">
-                These guidelines evolve with our community. We appreciate your feedback and commitment 
-                to making LifeFlow a safe, welcoming space for everyone.
-              </p>
+            {/* Community Rules */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Users className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Community Rules</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">1. Be Respectful and Kind</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Treat all members with courtesy and respect</li>
+                      <li>• Use appropriate language and tone in all communications</li>
+                      <li>• Respect different opinions, backgrounds, and perspectives</li>
+                      <li>• Be constructive in feedback and discussions</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">2. No Harassment or Bullying</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Harassment, intimidation, or bullying of any kind is prohibited</li>
+                      <li>• Do not engage in personal attacks or targeted harassment</li>
+                      <li>• Respect boundaries when someone asks you to stop</li>
+                      <li>• Report any harassment to our moderation team immediately</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">3. Appropriate Content Only</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Share content that is appropriate for all audiences</li>
+                      <li>• No explicit, violent, or disturbing content</li>
+                      <li>• Avoid controversial topics that may cause conflict</li>
+                      <li>• Keep discussions relevant to the community purpose</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">4. Privacy and Safety</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Protect your personal information and that of others</li>
+                      <li>• Do not share contact information publicly</li>
+                      <li>• Report suspicious or unsafe behavior</li>
+                      <li>• Use privacy settings to control your information visibility</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">5. No Spam or Self-Promotion</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Avoid repetitive or irrelevant posts</li>
+                      <li>• Do not use the platform solely for commercial promotion</li>
+                      <li>• Share valuable content that benefits the community</li>
+                      <li>• Follow our guidelines for business-related posts</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Age Requirements */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <AlertTriangle className="h-6 w-6 text-amber-500" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Age Requirements & Legal Compliance</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Minimum Age Requirement</h3>
+                    <p className="text-gray-700">
+                      You must be at least 18 years old to create an account and use LifeFlow. 
+                      This age verification is required for legal compliance and to ensure appropriate interactions.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Age Verification</h3>
+                    <p className="text-gray-700">
+                      During registration, you must provide your date of birth. False information 
+                      regarding age will result in immediate account suspension.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Legal Compliance</h3>
+                    <p className="text-gray-700">
+                      Our platform complies with international data protection laws including GDPR, 
+                      CCPA, and other applicable regulations. All users must agree to our terms and privacy policy.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reporting & Enforcement */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Flag className="h-6 w-6 text-red-500" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Reporting & Enforcement</h2>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">How to Report Violations</h3>
+                    <ul className="text-gray-700 space-y-2 ml-4">
+                      <li>• Use the report button on posts, comments, or profiles</li>
+                      <li>• Contact our support team directly for serious violations</li>
+                      <li>• Provide detailed information about the violation</li>
+                      <li>• Include screenshots or evidence when possible</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Enforcement Actions</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="space-y-3">
+                        <div>
+                          <span className="font-medium text-amber-600">Warning:</span>
+                          <span className="text-gray-700 ml-2">First-time minor violations receive a warning</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-orange-600">Temporary Suspension:</span>
+                          <span className="text-gray-700 ml-2">Repeated violations result in temporary account suspension</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-red-600">Permanent Ban:</span>
+                          <span className="text-gray-700 ml-2">Serious violations lead to permanent account termination</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Appeal Process</h3>
+                    <p className="text-gray-700">
+                      If you believe an enforcement action was taken in error, you may appeal within 30 days. 
+                      Contact our support team with your case details for review.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Eye className="h-6 w-6 text-green-500" />
+                  <h2 className="text-2xl font-semibold text-gray-900">Need Help?</h2>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-gray-700 mb-4">
+                    If you have questions about these guidelines or need to report a violation, 
+                    our community team is here to help.
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">
+                      <strong>Community Support:</strong> community@lifeflow.com
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Legal Inquiries:</strong> legal@lifeflow.com
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Emergency Reports:</strong> Use in-app reporting for immediate assistance
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Last Updated */}
+            <div className="text-center text-sm text-gray-500">
+              <p>Last updated: {new Date().toLocaleDateString()}</p>
+              <p>These guidelines may be updated periodically. Users will be notified of significant changes.</p>
             </div>
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );

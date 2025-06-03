@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Users, Briefcase, BookOpen, Info, LogOut, User } from "lucide-react";
+import { Menu, X, Users, Briefcase, BookOpen, Info, LogOut, User, Share2, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -47,13 +48,26 @@ const Navigation = () => {
                 <span>Community</span>
               </Button>
             </Link>
+            
+            {user && (
+              <Link to="/social">
+                <Button 
+                  variant={isActive('/social') ? "default" : "ghost"} 
+                  className="flex items-center space-x-2"
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span>Social Media</span>
+                </Button>
+              </Link>
+            )}
+            
             <Link to="/jobs">
               <Button 
                 variant={isActive('/jobs') ? "default" : "ghost"} 
                 className="flex items-center space-x-2"
               >
                 <Briefcase className="h-4 w-4" />
-                <span>Job Opportunities</span>
+                <span>Jobs</span>
               </Button>
             </Link>
             <Link to="/blog">
@@ -92,6 +106,20 @@ const Navigation = () => {
                     <div className="font-medium">{user.user_metadata?.full_name || 'User'}</div>
                     <div className="text-xs text-gray-500">{user.email}</div>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sign out</span>
@@ -129,10 +157,20 @@ const Navigation = () => {
                   Community
                 </Button>
               </Link>
+              
+              {user && (
+                <Link to="/social" className="block">
+                  <Button variant={isActive('/social') ? "default" : "ghost"} className="w-full justify-start">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Social Media
+                  </Button>
+                </Link>
+              )}
+              
               <Link to="/jobs" className="block">
                 <Button variant={isActive('/jobs') ? "default" : "ghost"} className="w-full justify-start">
                   <Briefcase className="h-4 w-4 mr-2" />
-                  Job Opportunities
+                  Jobs
                 </Button>
               </Link>
               <Link to="/blog" className="block">
@@ -153,6 +191,12 @@ const Navigation = () => {
                     <div className="text-sm text-gray-600">
                       {user.user_metadata?.full_name || user.email}
                     </div>
+                    <Link to="/profile">
+                      <Button variant="outline" className="w-full mb-2">
+                        <User className="h-4 w-4 mr-2" />
+                        Profile
+                      </Button>
+                    </Link>
                     <Button 
                       onClick={handleSignOut}
                       variant="outline" 

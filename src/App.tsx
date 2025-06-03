@@ -11,6 +11,8 @@ import JobOpportunities from "./pages/JobOpportunities";
 import Blog from "./pages/Blog";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
+import SocialMedia from "./pages/SocialMedia";
+import Profile from "./pages/Profile";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
@@ -41,15 +43,16 @@ const App = () => {
     script.async = true;
     script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7512720812981009";
     script.crossOrigin = "anonymous";
+    script.setAttribute('data-allowed', 'true');
     document.head.appendChild(script);
 
     // Set security headers via meta tags
     const securityHeaders = [
       { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
+      { name: 'X-Frame-Options', content: 'SAMEORIGIN' },
       { name: 'X-XSS-Protection', content: '1; mode=block' },
       { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' },
-      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=()' },
+      { name: 'Permissions-Policy', content: 'camera=(), microphone=(), geolocation=(self)' },
     ];
 
     securityHeaders.forEach(({ name, content }) => {
@@ -72,7 +75,9 @@ const App = () => {
 
     return () => {
       // Cleanup script on unmount
-      document.head.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
     };
   }, []);
 
@@ -87,6 +92,8 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Community />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/social" element={<SocialMedia />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/jobs" element={<JobOpportunities />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/about" element={<About />} />

@@ -1,169 +1,319 @@
 
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
+import HeroSection from "@/components/HeroSection";
+import FeaturesSection from "@/components/FeaturesSection";
+import CreateSocialPost from "@/components/CreateSocialPost";
+import SocialPostCard from "@/components/SocialPostCard";
+import AdSenseAd from "@/components/AdSenseAd";
+import CommunityChat from "@/components/CommunityChat";
+import FriendsChat from "@/components/FriendsChat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MessageCircle, TrendingUp, Calendar, MapPin, Filter } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Heart, MessageCircle, TrendingUp, Users, Eye, Calendar, Share2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Community = () => {
-  const communityStats = [
-    { label: "Active Members", value: "50,847", icon: Users },
-    { label: "Daily Discussions", value: "2,341", icon: MessageCircle },
-    { label: "Growth This Month", value: "+12.5%", icon: TrendingUp },
-    { label: "Events This Week", value: "18", icon: Calendar }
-  ];
+  const { user } = useAuth();
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    totalPosts: 0,
+    activeToday: 0
+  });
 
-  const discussions = [
-    {
-      title: "Best Practices for Remote Team Collaboration",
-      author: "Sarah Chen",
-      replies: 24,
-      views: 1247,
-      lastActivity: "2 hours ago",
-      tags: ["Remote Work", "Collaboration", "Productivity"]
-    },
-    {
-      title: "Industry Trends in AI and Machine Learning",
-      author: "Marcus Rodriguez",
-      replies: 67,
-      views: 3421,
-      lastActivity: "4 hours ago",
-      tags: ["AI", "Technology", "Innovation"]
-    },
-    {
-      title: "Networking Events and Professional Development",
-      author: "Jennifer Park",
-      replies: 15,
-      views: 892,
-      lastActivity: "6 hours ago",
-      tags: ["Networking", "Career", "Events"]
+  useEffect(() => {
+    fetchRecentContent();
+    fetchStats();
+  }, []);
+
+  const fetchRecentContent = async () => {
+    // Fetch recent social posts
+    const { data: socialPosts } = await supabase
+      .from('social_posts')
+      .select(`
+        *,
+        profiles:author_id (
+          full_name,
+          avatar_url,
+          username
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (socialPosts) {
+      setRecentPosts(socialPosts);
     }
-  ];
+
+    // Fetch recent blog posts
+    const { data: blogs } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (blogs) {
+      setBlogPosts(blogs);
+    }
+  };
+
+  const fetchStats = async () => {
+    // Get total members
+    const { count: members } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+
+    // Get total posts
+    const { count: posts } = await supabase
+      .from('social_posts')
+      .select('*', { count: 'exact', head: true });
+
+    // Get active users today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count: activeUsers } = await supabase
+      .from('user_presence')
+      .select('*', { count: 'exact', head: true })
+      .gte('updated_at', today.toISOString());
+
+    setStats({
+      totalMembers: members || 0,
+      totalPosts: posts || 0,
+      activeToday: activeUsers || 0
+    });
+  };
+
+  const refreshPosts = () => {
+    fetchRecentContent();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Section */}
-      <section className="pt-24 pb-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
-              Welcome to the Community
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Connect with professionals, share insights, and grow together in our thriving community platform.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-700">
-                Start Discussion
-              </Button>
-              <Button variant="outline" size="lg">
-                Browse Topics
-              </Button>
-            </div>
-          </div>
-
-          {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {communityStats.map((stat, index) => (
-              <Card key={index} className="text-center">
-                <CardContent className="pt-6">
-                  <stat.icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Main Content */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Filter className="h-5 w-5 mr-2" />
-                    Categories
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button variant="ghost" className="w-full justify-start">General Discussion</Button>
-                  <Button variant="ghost" className="w-full justify-start">Career Development</Button>
-                  <Button variant="ghost" className="w-full justify-start">Technology</Button>
-                  <Button variant="ghost" className="w-full justify-start">Industry News</Button>
-                  <Button variant="ghost" className="w-full justify-start">Networking</Button>
-                </CardContent>
-              </Card>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Community Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Users className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-gray-900">{stats.totalMembers}</div>
+              <div className="text-sm text-gray-600">Community Members</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Share2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-gray-900">{stats.totalPosts}</div>
+              <div className="text-sm text-gray-600">Posts Shared</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <TrendingUp className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-gray-900">{stats.activeToday}</div>
+              <div className="text-sm text-gray-600">Active Today</div>
+            </CardContent>
+          </Card>
+        </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    Upcoming Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="border-l-4 border-blue-600 pl-3">
-                    <h4 className="font-medium">Virtual Networking</h4>
-                    <p className="text-sm text-gray-600">Tomorrow, 2:00 PM</p>
-                  </div>
-                  <div className="border-l-4 border-green-600 pl-3">
-                    <h4 className="font-medium">Tech Talk Series</h4>
-                    <p className="text-sm text-gray-600">Friday, 10:00 AM</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Main Discussion Area */}
-            <div className="lg:col-span-3">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Latest Discussions</h2>
-                <Button>New Discussion</Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* What's New Section */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">What's New in Our Community</h2>
+                {user && (
+                  <Link to="/social">
+                    <Button>View All Posts</Button>
+                  </Link>
+                )}
               </div>
 
-              <div className="space-y-4">
-                {discussions.map((discussion, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600">
-                          {discussion.title}
-                        </h3>
-                        <span className="text-sm text-gray-500">{discussion.lastActivity}</span>
+              {user ? (
+                <div className="space-y-6">
+                  <CreateSocialPost onPostCreated={refreshPosts} />
+                  
+                  {recentPosts.length > 0 ? (
+                    <div className="space-y-6">
+                      {recentPosts.slice(0, 2).map((post) => (
+                        <SocialPostCard key={post.id} post={post} />
+                      ))}
+                      <div className="text-center">
+                        <Link to="/social">
+                          <Button variant="outline">See More Posts</Button>
+                        </Link>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span>by {discussion.author}</span>
-                          <span>{discussion.replies} replies</span>
-                          <span>{discussion.views} views</span>
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <Share2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+                        <p className="text-gray-600">Be the first to share something with the community!</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Join Our Community</h3>
+                    <p className="text-gray-600 mb-4">Connect with like-minded people and share your experiences</p>
+                    <Link to="/auth">
+                      <Button className="bg-gradient-to-r from-blue-600 to-indigo-700">
+                        Sign Up Now
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
+            </section>
+
+            {/* Recent Blog Posts */}
+            {blogPosts.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Latest from Our Blog</h2>
+                  <Link to="/blog">
+                    <Button variant="outline">View All Articles</Button>
+                  </Link>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {blogPosts.slice(0, 2).map((post) => (
+                    <Card key={post.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-0">
+                        {post.featured_image_url && (
+                          <img 
+                            src={post.featured_image_url} 
+                            alt={post.title}
+                            className="w-full h-48 object-cover rounded-t-lg"
+                          />
+                        )}
+                        <div className="p-6">
+                          <h3 className="font-semibold text-lg mb-2 line-clamp-2">{post.title}</h3>
+                          {post.excerpt && (
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-3">{post.excerpt}</p>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-4 w-4" />
+                                {post.view_count || 0}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                {new Date(post.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            {post.tags && post.tags.length > 0 && (
+                              <Badge variant="secondary">{post.tags[0]}</Badge>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {discussion.tags.map((tag, tagIndex) => (
-                          <Badge key={tagIndex} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* AdSense Ad */}
+            <AdSenseAd 
+              adSlot="1234567890"
+              adFormat="rectangle"
+              style={{ minHeight: '250px' }}
+            />
+
+            {/* Community Guidelines */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Community Guidelines</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  LifeFlow is a place where hearts connect. Please follow our guidelines to maintain a positive environment.
+                </p>
+                <ul className="text-sm text-gray-600 space-y-2 mb-4">
+                  <li>• Be respectful and kind</li>
+                  <li>• No spam or inappropriate content</li>
+                  <li>• Respect others' privacy</li>
+                  <li>• Report any violations</li>
+                </ul>
+                <Link to="/community-guidelines">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Read Full Guidelines
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Quick Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Access</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link to="/jobs" className="block">
+                  <Button variant="ghost" className="w-full justify-start">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Job Opportunities
+                  </Button>
+                </Link>
+                <Link to="/blog" className="block">
+                  <Button variant="ghost" className="w-full justify-start">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Blog & Articles
+                  </Button>
+                </Link>
+                {user && (
+                  <Link to="/social" className="block">
+                    <Button variant="ghost" className="w-full justify-start">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Social Media Hub
+                    </Button>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Another AdSense Ad */}
+            <AdSenseAd 
+              adSlot="0987654321"
+              adFormat="rectangle"
+              style={{ minHeight: '250px' }}
+            />
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Chat Components */}
+      {user && (
+        <>
+          <CommunityChat />
+          <FriendsChat />
+        </>
+      )}
 
       <Footer />
     </div>

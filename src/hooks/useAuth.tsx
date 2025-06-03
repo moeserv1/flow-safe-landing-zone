@@ -8,7 +8,12 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: {
+    firstName: string;
+    lastName: string;
+    gender: string;
+    dateOfBirth: string;
+  }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -40,6 +45,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Update user presence when auth state changes
+        if (session?.user) {
+          setTimeout(() => {
+            supabase.from('user_presence').upsert({
+              user_id: session.user.id,
+              status: 'online',
+              updated_at: new Date().toISOString()
+            });
+          }, 0);
+        } else {
+          setTimeout(() => {
+            if (user) {
+              supabase.from('user_presence').update({
+                status: 'offline',
+                last_seen: new Date().toISOString()
+              }).eq('user_id', user.id);
+            }
+          }, 0);
+        }
       }
     );
 
@@ -51,9 +76,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [user]);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, userData: {
+    firstName: string;
+    lastName: string;
+    gender: string;
+    dateOfBirth: string;
+  }) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -61,7 +91,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: fullName ? { full_name: fullName } : undefined
+        data: {
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          full_name: `${userData.firstName} ${userData.lastName}`,
+          gender: userData.gender,
+          date_of_birth: userData.dateOfBirth
+        }
       }
     });
 
@@ -99,6 +135,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signOut = async () => {
+    if (user) {
+      await supabase.from('user_presence').update({
+        status: 'offline',
+        last_seen: new Date().toISOString()
+      }).eq('user_id', user.id);
+    }
+    
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
