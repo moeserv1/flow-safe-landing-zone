@@ -65,6 +65,22 @@ const Profile = () => {
     }
 
     if (data) {
+      // Parse privacy settings safely
+      let privacySettings: PrivacySettings = {
+        show_age: true,
+        show_location: false,
+        allow_friend_requests: true
+      };
+
+      if (data.privacy_settings && typeof data.privacy_settings === 'object') {
+        const settings = data.privacy_settings as any;
+        privacySettings = {
+          show_age: settings.show_age ?? true,
+          show_location: settings.show_location ?? false,
+          allow_friend_requests: settings.allow_friend_requests ?? true
+        };
+      }
+
       setProfile({
         first_name: data.first_name || '',
         last_name: data.last_name || '',
@@ -73,11 +89,7 @@ const Profile = () => {
         interests: data.interests || [],
         age_search_min: data.age_search_min || 16,
         age_search_max: data.age_search_max || 99,
-        privacy_settings: (data.privacy_settings as PrivacySettings) || {
-          show_age: true,
-          show_location: false,
-          allow_friend_requests: true
-        }
+        privacy_settings: privacySettings
       });
     }
   };
@@ -100,6 +112,13 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Convert privacy settings to a plain object for JSON storage
+    const privacySettingsJson = {
+      show_age: profile.privacy_settings.show_age,
+      show_location: profile.privacy_settings.show_location,
+      allow_friend_requests: profile.privacy_settings.allow_friend_requests
+    };
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -111,7 +130,7 @@ const Profile = () => {
         interests: profile.interests,
         age_search_min: profile.age_search_min,
         age_search_max: profile.age_search_max,
-        privacy_settings: profile.privacy_settings
+        privacy_settings: privacySettingsJson
       })
       .eq('id', user.id);
 
