@@ -15,14 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, MessageCircle, TrendingUp, Users, Eye, Calendar, Share2, Briefcase, BookOpen, Video, RadioIcon } from "lucide-react";
+import { Heart, MessageCircle, TrendingUp, Users, Eye, Calendar, Share2, Briefcase, BookOpen, Upload, RadioIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Community = () => {
   const { user } = useAuth();
   const [recentPosts, setRecentPosts] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
-  const [recentVideos, setRecentVideos] = useState([]);
+  const [recentUploads, setRecentUploads] = useState([]);
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalPosts: 0,
@@ -65,10 +65,10 @@ const Community = () => {
       setBlogPosts(blogs);
     }
 
-    // Fetch recent videos
+    // Fetch recent uploads
     try {
       const { data: videos } = await supabase
-        .from('videos' as any)
+        .from('videos')
         .select(`
           *,
           user:user_id (
@@ -80,10 +80,10 @@ const Community = () => {
         .limit(3);
 
       if (videos) {
-        setRecentVideos(videos);
+        setRecentUploads(videos);
       }
     } catch (error) {
-      console.error('Error fetching videos:', error);
+      console.error('Error fetching uploads:', error);
     }
   };
 
@@ -155,7 +155,7 @@ const Community = () => {
             <Tabs defaultValue="feed" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="feed">Social Feed</TabsTrigger>
-                <TabsTrigger value="videos">Videos</TabsTrigger>
+                <TabsTrigger value="uploads">Uploads</TabsTrigger>
                 <TabsTrigger value="live">Live</TabsTrigger>
                 <TabsTrigger value="blog">Blog</TabsTrigger>
               </TabsList>
@@ -202,46 +202,46 @@ const Community = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="videos" className="space-y-6">
+              <TabsContent value="uploads" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {recentVideos.map((video: any) => (
-                    <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                  {recentUploads.map((upload: any) => (
+                    <Card key={upload.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                       <div className="aspect-video bg-gray-200 relative">
-                        {video.thumbnail_url ? (
+                        {upload.thumbnail_url ? (
                           <img 
-                            src={video.thumbnail_url} 
-                            alt={video.title}
+                            src={upload.thumbnail_url} 
+                            alt={upload.title}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Video className="h-12 w-12 text-gray-400" />
+                            <Upload className="h-12 w-12 text-gray-400" />
                           </div>
                         )}
                       </div>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold line-clamp-2">{video.title}</h3>
+                        <h3 className="font-semibold line-clamp-2">{upload.title}</h3>
                         <div className="flex items-center space-x-2 mt-2">
                           <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                            {video.user?.avatar_url ? (
+                            {upload.user?.avatar_url ? (
                               <img 
-                                src={video.user.avatar_url} 
-                                alt={video.user.full_name}
+                                src={upload.user.avatar_url} 
+                                alt={upload.user.full_name}
                                 className="w-6 h-6 rounded-full"
                               />
                             ) : (
-                              <span className="text-xs">{video.user?.full_name?.charAt(0) || 'U'}</span>
+                              <span className="text-xs">{upload.user?.full_name?.charAt(0) || 'U'}</span>
                             )}
                           </div>
-                          <span className="text-sm text-gray-600">{video.user?.full_name}</span>
+                          <span className="text-sm text-gray-600">{upload.user?.full_name}</span>
                         </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
                 <div className="text-center">
-                  <Link to="/videos">
-                    <Button>View All Videos</Button>
+                  <Link to="/uploads">
+                    <Button>View All Uploads</Button>
                   </Link>
                 </div>
               </TabsContent>
@@ -365,10 +365,10 @@ const Community = () => {
                     Job Opportunities
                   </Button>
                 </Link>
-                <Link to="/videos" className="block">
+                <Link to="/uploads" className="block">
                   <Button variant="ghost" className="w-full justify-start">
-                    <Video className="h-4 w-4 mr-2" />
-                    Videos & Content
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload & Content
                   </Button>
                 </Link>
                 <Link to="/live" className="block">
