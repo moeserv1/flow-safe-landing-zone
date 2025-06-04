@@ -1,223 +1,210 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Menu, X, Users, Briefcase, BookOpen, Info, LogOut, User, Share2, Settings } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from './ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from './ui/dropdown-menu';
+import { 
+  Users,
+  Home,
+  Briefcase,
+  BookOpen,
+  Menu,
+  X,
+  LogOut,
+  User,
+  Settings,
+  Video,
+  RadioIcon
+} from 'lucide-react';
 
 const Navigation = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path;
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
   };
 
+  const navItems = [
+    { label: 'Home', icon: Home, href: '/' },
+    { label: 'Social', icon: Users, href: '/social' },
+    { label: 'Videos', icon: Video, href: '/videos' },
+    { label: 'Live', icon: RadioIcon, href: '/live' },
+    { label: 'Jobs', icon: Briefcase, href: '/jobs' },
+    { label: 'Blog', icon: BookOpen, href: '/blog' }
+  ];
+
   return (
-    <nav className="bg-white/95 backdrop-blur-md fixed w-full top-0 z-50 border-b border-gray-200 shadow-sm">
+    <nav
+      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur-sm'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-2.5 rounded-lg">
-              <Users className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">
-              LifeFlow
-            </span>
-          </Link>
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center">
+              <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                LifeFlow
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            <Link to="/">
-              <Button 
-                variant={isActive('/') ? "default" : "ghost"} 
-                className="flex items-center space-x-2"
+          <div className="hidden lg:flex items-center space-x-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${
+                  location.pathname === item.href
+                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
               >
-                <Users className="h-4 w-4" />
-                <span>Community</span>
-              </Button>
-            </Link>
-            
-            {user && (
-              <Link to="/social">
-                <Button 
-                  variant={isActive('/social') ? "default" : "ghost"} 
-                  className="flex items-center space-x-2"
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span>Social Media</span>
-                </Button>
+                <item.icon className="h-4 w-4 mr-1.5" />
+                {item.label}
               </Link>
-            )}
-            
-            <Link to="/jobs">
-              <Button 
-                variant={isActive('/jobs') ? "default" : "ghost"} 
-                className="flex items-center space-x-2"
-              >
-                <Briefcase className="h-4 w-4" />
-                <span>Jobs</span>
-              </Button>
-            </Link>
-            <Link to="/blog">
-              <Button 
-                variant={isActive('/blog') ? "default" : "ghost"} 
-                className="flex items-center space-x-2"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span>Blog</span>
-              </Button>
-            </Link>
-            <Link to="/about">
-              <Button 
-                variant={isActive('/about') ? "default" : "ghost"} 
-                className="flex items-center space-x-2"
-              >
-                <Info className="h-4 w-4" />
-                <span>About</span>
-              </Button>
-            </Link>
-            
+            ))}
+          </div>
+
+          {/* Auth */}
+          <div className="hidden lg:flex items-center">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-4">
+                  <Button variant="ghost" className="relative rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.user_metadata?.avatar_url} />
                       <AvatarFallback>
-                        {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        {user.user_metadata?.first_name?.[0] || 
+                         user.user_metadata?.full_name?.[0] || 
+                         user.email?.[0]?.toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuItem className="flex flex-col items-start">
-                    <div className="font-medium">{user.user_metadata?.full_name || 'User'}</div>
-                    <div className="text-xs text-gray-500">{user.email}</div>
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {user.user_metadata?.first_name 
+                      ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+                      : user.email}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings" className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign out</span>
+                    Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/auth">
-                <Button className="ml-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800">
-                  Join Platform
-                </Button>
-              </Link>
+              <Button onClick={() => navigate('/auth')}>Sign In</Button>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden animate-fade-in bg-white border-t border-gray-200">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to="/" className="block">
-                <Button variant={isActive('/') ? "default" : "ghost"} className="w-full justify-start">
-                  <Users className="h-4 w-4 mr-2" />
-                  Community
-                </Button>
-              </Link>
-              
-              {user && (
-                <Link to="/social" className="block">
-                  <Button variant={isActive('/social') ? "default" : "ghost"} className="w-full justify-start">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Social Media
-                  </Button>
-                </Link>
-              )}
-              
-              <Link to="/jobs" className="block">
-                <Button variant={isActive('/jobs') ? "default" : "ghost"} className="w-full justify-start">
-                  <Briefcase className="h-4 w-4 mr-2" />
-                  Jobs
-                </Button>
-              </Link>
-              <Link to="/blog" className="block">
-                <Button variant={isActive('/blog') ? "default" : "ghost"} className="w-full justify-start">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Blog
-                </Button>
-              </Link>
-              <Link to="/about" className="block">
-                <Button variant={isActive('/about') ? "default" : "ghost"} className="w-full justify-start">
-                  <Info className="h-4 w-4 mr-2" />
-                  About
-                </Button>
-              </Link>
-              <div className="px-3 py-2">
-                {user ? (
-                  <div className="space-y-2">
-                    <div className="text-sm text-gray-600">
-                      {user.user_metadata?.full_name || user.email}
-                    </div>
-                    <Link to="/profile">
-                      <Button variant="outline" className="w-full mb-2">
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
-                      </Button>
-                    </Link>
-                    <Button 
-                      onClick={handleSignOut}
-                      variant="outline" 
-                      className="w-full"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                ) : (
-                  <Link to="/auth">
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-700">
-                      Join Platform
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
+                  location.pathname === item.href
+                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <item.icon className="h-5 w-5 mr-2" />
+                {item.label}
+              </Link>
+            ))}
+
+            {/* Mobile Auth */}
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="block px-3 py-2 rounded-md text-base font-medium flex items-center text-gray-600 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <User className="h-5 w-5 mr-2" />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left block px-3 py-2 rounded-md text-base font-medium flex items-center text-gray-600 hover:bg-gray-50"
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  Log out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700 text-center"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

@@ -13,6 +13,8 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import SocialMedia from "./pages/SocialMedia";
 import Profile from "./pages/Profile";
+import Videos from "./pages/Videos";
+import LiveStreams from "./pages/LiveStreams";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
@@ -96,6 +98,8 @@ const App = () => {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/jobs" element={<JobOpportunities />} />
                 <Route path="/blog" element={<Blog />} />
+                <Route path="/videos" element={<Videos />} />
+                <Route path="/live" element={<LiveStreams />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
