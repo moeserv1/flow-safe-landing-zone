@@ -32,74 +32,83 @@ const ContentCreatorDashboard = () => {
   const fetchCreatorStats = async () => {
     if (!user) return;
 
-    // Fetch video stats
-    const { data: videos } = await supabase
-      .from('videos')
-      .select('views_count, likes_count, created_at')
-      .eq('user_id', user.id);
+    try {
+      const { data: videos } = await supabase
+        .from('videos' as any)
+        .select('views_count, likes_count, created_at')
+        .eq('user_id', user.id);
 
-    if (videos) {
-      const totalViews = videos.reduce((sum, v) => sum + (v.views_count || 0), 0);
-      const totalLikes = videos.reduce((sum, v) => sum + (v.likes_count || 0), 0);
-      const thisMonth = new Date();
-      thisMonth.setMonth(thisMonth.getMonth() - 1);
-      
-      const thisMonthViews = videos
-        .filter(v => new Date(v.created_at) > thisMonth)
-        .reduce((sum, v) => sum + (v.views_count || 0), 0);
+      if (videos) {
+        const totalViews = videos.reduce((sum: number, v: any) => sum + (v.views_count || 0), 0);
+        const totalLikes = videos.reduce((sum: number, v: any) => sum + (v.likes_count || 0), 0);
+        const thisMonth = new Date();
+        thisMonth.setMonth(thisMonth.getMonth() - 1);
+        
+        const thisMonthViews = videos
+          .filter((v: any) => new Date(v.created_at) > thisMonth)
+          .reduce((sum: number, v: any) => sum + (v.views_count || 0), 0);
+
+        setStats(prev => ({
+          ...prev,
+          totalViews,
+          totalLikes,
+          totalVideos: videos.length,
+          thisMonthViews
+        }));
+      }
+
+      const { count: subscriberCount } = await supabase
+        .from('friendships')
+        .select('*', { count: 'exact', head: true })
+        .eq('addressee_id', user.id)
+        .eq('status', 'accepted');
 
       setStats(prev => ({
         ...prev,
-        totalViews,
-        totalLikes,
-        totalVideos: videos.length,
-        thisMonthViews
+        subscribers: subscriberCount || 0
       }));
+    } catch (error) {
+      console.error('Error fetching creator stats:', error);
     }
-
-    // Fetch subscriber count (from social connections or followers)
-    const { count: subscriberCount } = await supabase
-      .from('friendships')
-      .select('*', { count: 'exact', head: true })
-      .eq('addressee_id', user.id)
-      .eq('status', 'accepted');
-
-    setStats(prev => ({
-      ...prev,
-      subscribers: subscriberCount || 0
-    }));
   };
 
   const fetchRecentVideos = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('videos')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(5);
+    try {
+      const { data } = await supabase
+        .from('videos' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-    if (data) {
-      setRecentVideos(data);
+      if (data) {
+        setRecentVideos(data);
+      }
+    } catch (error) {
+      console.error('Error fetching recent videos:', error);
     }
   };
 
   const fetchEarnings = async () => {
     if (!user) return;
 
-    // Fetch earnings data
-    const { data } = await supabase
-      .from('creator_earnings')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(12);
+    try {
+      const { data } = await supabase
+        .from('creator_earnings' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(12);
 
-    if (data) {
-      setEarnings(data);
-      const totalEarnings = data.reduce((sum, e) => sum + (e.amount || 0), 0);
-      setStats(prev => ({ ...prev, earnings: totalEarnings }));
+      if (data) {
+        setEarnings(data);
+        const totalEarnings = data.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+        setStats(prev => ({ ...prev, earnings: totalEarnings }));
+      }
+    } catch (error) {
+      console.error('Error fetching earnings:', error);
     }
   };
 
@@ -115,7 +124,6 @@ const ContentCreatorDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
@@ -166,7 +174,6 @@ const ContentCreatorDashboard = () => {
         </Card>
       </div>
 
-      {/* Detailed Dashboard */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>

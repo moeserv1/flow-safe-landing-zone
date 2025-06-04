@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Video, RadioIcon, Users, MessageCircle, Heart, Share2 } from 'lucide-react';
+import { Video, RadioIcon, Users, MessageCircle } from 'lucide-react';
 
 interface LiveStreamProps {
   streamId?: string;
@@ -49,7 +49,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
     }
 
     try {
-      // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
@@ -61,9 +60,8 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
         videoRef.current.srcObject = stream;
       }
 
-      // Create stream record in database
       const { data: streamData, error } = await supabase
-        .from('live_streams')
+        .from('live_streams' as any)
         .insert({
           user_id: user.id,
           title: title.trim(),
@@ -110,8 +108,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
   };
 
   const joinStream = async () => {
-    // Join as viewer - implement WebRTC connection here
-    // This is a simplified version
     setViewerCount(prev => prev + 1);
   };
 
@@ -128,8 +124,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
 
     setChatMessages(prev => [...prev, message]);
     setNewMessage('');
-
-    // In a real implementation, you'd send this through WebSocket or similar
   };
 
   if (!user && !isViewer) {
@@ -144,7 +138,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Stream Video */}
       <div className="lg:col-span-2">
         <Card>
           <CardContent className="p-0">
@@ -205,7 +198,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
         </Card>
       </div>
 
-      {/* Live Chat */}
       <div>
         <Card className="h-full">
           <CardHeader>

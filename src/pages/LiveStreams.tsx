@@ -22,7 +22,6 @@ const LiveStreams = () => {
   useEffect(() => {
     fetchActiveStreams();
     
-    // Set up subscription for real-time updates
     const channel = supabase
       .channel('live_streams_changes')
       .on('postgres_changes', 
@@ -39,29 +38,32 @@ const LiveStreams = () => {
   }, []);
 
   const fetchActiveStreams = async () => {
-    const { data, error } = await supabase
-      .from('live_streams')
-      .select(`
-        *,
-        user:user_id (
-          full_name,
-          avatar_url
-        )
-      `)
-      .eq('status', 'live')
-      .order('viewer_count', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('live_streams' as any)
+        .select(`
+          *,
+          user:user_id (
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'live')
+        .order('viewer_count', { ascending: false });
 
-    if (!error && data) {
-      setActiveStreams(data);
+      if (!error && data) {
+        setActiveStreams(data);
+      }
+    } catch (error) {
+      console.error('Error fetching active streams:', error);
     }
   };
 
   const handleStreamSelect = (stream: any) => {
     setSelectedStream(stream);
     
-    // Update viewer count
     supabase
-      .from('live_streams')
+      .from('live_streams' as any)
       .update({ viewer_count: (stream.viewer_count || 0) + 1 })
       .eq('id', stream.id);
   };
@@ -76,7 +78,6 @@ const LiveStreams = () => {
       
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Page Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Live Streams</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -84,7 +85,6 @@ const LiveStreams = () => {
             </p>
           </div>
 
-          {/* Main Content */}
           <Tabs defaultValue="watch" className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="watch">Watch Streams</TabsTrigger>
@@ -139,17 +139,17 @@ const LiveStreams = () => {
                         <h3 className="font-semibold line-clamp-1">{stream.title}</h3>
                         <div className="flex items-center space-x-2 mt-2">
                           <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                            {stream.user.avatar_url ? (
+                            {stream.user?.avatar_url ? (
                               <img 
                                 src={stream.user.avatar_url} 
                                 alt={stream.user.full_name}
                                 className="w-6 h-6 rounded-full"
                               />
                             ) : (
-                              <span className="text-xs">{stream.user.full_name?.charAt(0) || 'U'}</span>
+                              <span className="text-xs">{stream.user?.full_name?.charAt(0) || 'U'}</span>
                             )}
                           </div>
-                          <span className="text-sm text-gray-600">{stream.user.full_name}</span>
+                          <span className="text-sm text-gray-600">{stream.user?.full_name}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -234,7 +234,6 @@ const LiveStreams = () => {
             </TabsContent>
           </Tabs>
 
-          {/* AdSense */}
           <div className="mt-12">
             <AdSenseAd 
               adSlot="1234567890"

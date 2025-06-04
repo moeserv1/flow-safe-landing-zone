@@ -29,56 +29,61 @@ const Videos = () => {
   }, []);
 
   const fetchVideos = async () => {
-    const { data, error } = await supabase
-      .from('videos')
-      .select(`
-        *,
-        user:user_id (
-          full_name,
-          avatar_url
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    try {
+      const { data, error } = await supabase
+        .from('videos' as any)
+        .select(`
+          *,
+          user:user_id (
+            full_name,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-    if (!error && data) {
-      setVideos(data);
+      if (!error && data) {
+        setVideos(data);
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error);
     }
   };
 
   const fetchTrendingVideos = async () => {
-    const { data, error } = await supabase
-      .from('videos')
-      .select(`
-        *,
-        user:user_id (
-          full_name,
-          avatar_url
-        )
-      `)
-      .order('views_count', { ascending: false })
-      .limit(5);
+    try {
+      const { data, error } = await supabase
+        .from('videos' as any)
+        .select(`
+          *,
+          user:user_id (
+            full_name,
+            avatar_url
+          )
+        `)
+        .order('views_count', { ascending: false })
+        .limit(5);
 
-    if (!error && data) {
-      setTrendingVideos(data);
+      if (!error && data) {
+        setTrendingVideos(data);
+      }
+    } catch (error) {
+      console.error('Error fetching trending videos:', error);
     }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search functionality
   };
 
   const handleVideoSelect = (video: any) => {
     setSelectedVideo(video);
     
-    // Update view count
     supabase
-      .from('videos')
+      .from('videos' as any)
       .update({ views_count: (video.views_count || 0) + 1 })
       .eq('id', video.id)
       .then(() => {
-        // Refresh videos after incrementing view count
         fetchVideos();
         fetchTrendingVideos();
       });
@@ -94,7 +99,6 @@ const Videos = () => {
       
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Page Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Videos</h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -102,7 +106,6 @@ const Videos = () => {
             </p>
           </div>
 
-          {/* Search Bar */}
           <div className="mx-auto max-w-lg mb-8">
             <form onSubmit={handleSearch} className="flex gap-2">
               <Input
@@ -118,7 +121,6 @@ const Videos = () => {
             </form>
           </div>
 
-          {/* Main Content */}
           <Tabs defaultValue="discover" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="discover">Discover</TabsTrigger>
@@ -170,17 +172,17 @@ const Videos = () => {
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center space-x-2">
                             <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-                              {video.user.avatar_url ? (
+                              {video.user?.avatar_url ? (
                                 <img 
                                   src={video.user.avatar_url} 
                                   alt={video.user.full_name}
                                   className="w-6 h-6 rounded-full"
                                 />
                               ) : (
-                                <span className="text-xs">{video.user.full_name?.charAt(0) || 'U'}</span>
+                                <span className="text-xs">{video.user?.full_name?.charAt(0) || 'U'}</span>
                               )}
                             </div>
-                            <span className="text-xs text-gray-600">{video.user.full_name}</span>
+                            <span className="text-xs text-gray-600">{video.user?.full_name}</span>
                           </div>
                           <span className="text-xs text-gray-500">{video.views_count || 0} views</span>
                         </div>
@@ -316,7 +318,6 @@ const Videos = () => {
             </TabsContent>
           </Tabs>
 
-          {/* AdSense */}
           <div className="mt-12">
             <AdSenseAd 
               adSlot="1234567890"

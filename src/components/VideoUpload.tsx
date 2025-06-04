@@ -27,7 +27,6 @@ const VideoUpload = ({ onVideoUploaded }: VideoUploadProps) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith('video/')) {
       toast({
         title: "Error",
@@ -37,7 +36,6 @@ const VideoUpload = ({ onVideoUploaded }: VideoUploadProps) => {
       return;
     }
 
-    // Validate file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
       toast({
         title: "Error",
@@ -58,25 +56,18 @@ const VideoUpload = ({ onVideoUploaded }: VideoUploadProps) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(fileName, file, {
-          onUploadProgress: (progress) => {
-            setProgress((progress.loaded / progress.total) * 100);
-          }
-        });
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('videos')
         .getPublicUrl(fileName);
 
-      // Save video metadata to database
       const { data: videoData, error: dbError } = await supabase
-        .from('videos')
+        .from('videos' as any)
         .insert({
           user_id: user.id,
           title: title || file.name,
@@ -84,7 +75,7 @@ const VideoUpload = ({ onVideoUploaded }: VideoUploadProps) => {
           video_url: publicUrl,
           file_name: fileName,
           file_size: file.size,
-          duration: 0, // Will be updated when processed
+          duration: 0,
           status: 'processing'
         })
         .select()
@@ -99,7 +90,6 @@ const VideoUpload = ({ onVideoUploaded }: VideoUploadProps) => {
 
       onVideoUploaded?.(videoData);
       
-      // Reset form
       setTitle('');
       setDescription('');
       if (fileInputRef.current) {
