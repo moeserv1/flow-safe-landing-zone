@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Video, X, Play } from 'lucide-react';
+import { Upload, Video, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -43,7 +43,7 @@ const SocialVideoUpload = ({ onUploadComplete, onCancel }: SocialVideoUploadProp
       return;
     }
 
-    if (file.size > 500 * 1024 * 1024) { // 500MB limit
+    if (file.size > 500 * 1024 * 1024) {
       toast({
         title: "Error",
         description: "Video file must be less than 500MB",
@@ -73,28 +73,28 @@ const SocialVideoUpload = ({ onUploadComplete, onCancel }: SocialVideoUploadProp
     if (!selectedFile || !user || !title.trim()) return;
 
     setUploading(true);
-    setProgress(0);
-
+    
     try {
-      // Upload video to storage
+      // Simulate progress
+      setProgress(25);
+      
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
+      setProgress(50);
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('videos')
-        .upload(fileName, selectedFile, {
-          onUploadProgress: (progress) => {
-            setProgress((progress.loaded / progress.total) * 100);
-          }
-        });
+        .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
+
+      setProgress(75);
 
       const { data: { publicUrl } } = supabase.storage
         .from('videos')
         .getPublicUrl(fileName);
 
-      // Create social post with video
       const postData = {
         author_id: user.id,
         content: content || title,
@@ -117,6 +117,8 @@ const SocialVideoUpload = ({ onUploadComplete, onCancel }: SocialVideoUploadProp
         .single();
 
       if (postError) throw postError;
+
+      setProgress(100);
 
       toast({
         title: "Success!",

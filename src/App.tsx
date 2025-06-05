@@ -20,6 +20,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import Settings from "./pages/Settings";
+import Creator from "./pages/Creator";
+import CommunitySpacesPage from "./pages/CommunitySpacesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,11 +38,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/spaces" element={<CommunitySpacesPage />} />
             <Route path="/videos" element={<Videos />} />
             <Route path="/live-streams" element={<LiveStreams />} />
             <Route path="/social" element={<SocialMedia />} />
             <Route path="/jobs" element={<JobOpportunities />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/creator" element={<Creator />} />
             <Route path="/about" element={<About />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/terms" element={<TermsOfService />} />
