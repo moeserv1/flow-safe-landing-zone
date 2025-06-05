@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Heart, Upload, Users, RadioIcon, BookOpen, Briefcase, MessageCircle } from "lucide-react";
+import { Menu, Heart, Upload, Users, Video, BookOpen, Briefcase, MessageCircle } from "lucide-react";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -15,10 +15,10 @@ const Navigation = () => {
     { href: "/", label: "Home", icon: Heart },
     { href: "/community", label: "Community", icon: Users },
     { href: "/social", label: "Social", icon: MessageCircle },
-    { href: "/uploads", label: "Uploads", icon: Upload },
-    { href: "/live", label: "Live", icon: RadioIcon },
+    { href: "/videos", label: "Videos", icon: Video },
     { href: "/blog", label: "Blog", icon: BookOpen },
     { href: "/jobs", label: "Jobs", icon: Briefcase },
+    { href: "/creator", label: "Creator Hub", icon: Upload },
   ];
 
   const isActive = (path: string) => location.pathname === path;

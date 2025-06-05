@@ -4,10 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SecurityProvider } from "./components/SecurityProvider";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import UserProfilePage from "./pages/UserProfile";
 import Community from "./pages/Community";
 import Videos from "./pages/Videos";
 import LiveStreams from "./pages/LiveStreams";
@@ -28,7 +29,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SecurityProvider>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/user-profile/:userId?" element={<UserProfilePage />} />
             <Route path="/community" element={<Community />} />
             <Route path="/spaces" element={<CommunitySpacesPage />} />
             <Route path="/videos" element={<Videos />} />
@@ -55,7 +57,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </SecurityProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
