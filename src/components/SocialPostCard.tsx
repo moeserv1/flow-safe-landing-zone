@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Youtube, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Youtube, MoreHorizontal, Play } from 'lucide-react';
 import YouTubeShortPlayer from './YouTubeShortPlayer';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -69,6 +69,23 @@ const SocialPostCard = ({ post, onLike, onComment }: SocialPostCardProps) => {
         <div className="text-gray-800 leading-relaxed">
           {post.content}
         </div>
+        
+        {post.media_type === 'video' && post.media_url && (
+          <div className="rounded-xl overflow-hidden bg-gradient-to-br from-purple-50 to-blue-50 p-2">
+            <video 
+              src={post.media_url} 
+              controls
+              className="w-full h-auto max-h-96 object-cover rounded-lg shadow-md"
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+            <div className="flex items-center justify-center mt-2 text-xs text-purple-600 font-medium">
+              <Play className="h-4 w-4 mr-1" />
+              <span>Shared Video</span>
+            </div>
+          </div>
+        )}
         
         {post.media_type === 'youtube_short' && post.youtube_url && (
           <div className="flex flex-col items-center space-y-3 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4">
