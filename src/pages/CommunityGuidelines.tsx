@@ -1,232 +1,227 @@
 
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Heart, Users, AlertTriangle, MessageCircle, Eye } from "lucide-react";
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Shield, Heart, Users, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const CommunityGuidelines = () => {
+  const guidelines = [
+    {
+      icon: <Heart className="h-6 w-6 text-red-500" />,
+      title: "Be Respectful",
+      description: "Treat everyone with kindness and respect. We're all here to connect and learn from each other.",
+      dos: ["Use polite language", "Listen to different viewpoints", "Give constructive feedback"],
+      donts: ["Use hate speech or slurs", "Bully or harass others", "Make personal attacks"]
+    },
+    {
+      icon: <Users className="h-6 w-6 text-blue-500" />,
+      title: "Foster Inclusion",
+      description: "Create an environment where everyone feels welcome regardless of their background, beliefs, or identity.",
+      dos: ["Welcome newcomers", "Celebrate diversity", "Use inclusive language"],
+      donts: ["Discriminate based on identity", "Exclude others", "Make assumptions about people"]
+    },
+    {
+      icon: <Shield className="h-6 w-6 text-green-500" />,
+      title: "Keep Everyone Safe",
+      description: "Help maintain a safe space by reporting inappropriate content and protecting personal information.",
+      dos: ["Report suspicious activity", "Protect privacy", "Use content warnings when needed"],
+      donts: ["Share personal information", "Engage in dangerous activities", "Threaten others"]
+    },
+    {
+      icon: <CheckCircle className="h-6 w-6 text-purple-500" />,
+      title: "Share Authentic Content",
+      description: "Be genuine in your interactions and share content that adds value to the community.",
+      dos: ["Share original content", "Give proper credit", "Be authentic"],
+      donts: ["Plagiarize content", "Spread misinformation", "Create fake accounts"]
+    }
+  ];
+
+  const violations = [
+    {
+      severity: "Minor",
+      examples: ["Spam", "Off-topic posts", "Excessive self-promotion"],
+      consequences: ["Warning", "Content removal", "Temporary restrictions"],
+      color: "bg-yellow-100 text-yellow-800"
+    },
+    {
+      severity: "Moderate",
+      examples: ["Harassment", "Inappropriate content", "Doxxing"],
+      consequences: ["Temporary suspension", "Account restrictions", "Content removal"],
+      color: "bg-orange-100 text-orange-800"
+    },
+    {
+      severity: "Severe",
+      examples: ["Hate speech", "Threats", "Illegal content"],
+      consequences: ["Permanent ban", "Account termination", "Legal action if necessary"],
+      color: "bg-red-100 text-red-800"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Navigation />
-      
-      <div className="pt-24 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-16">
+        <div className="container mx-auto px-4 py-16">
+          {/* Header */}
           <div className="text-center mb-12">
-            <Shield className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Community Guidelines</h1>
-            <p className="text-xl text-gray-600">
-              Building a safe, respectful, and vibrant community for everyone
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Community Guidelines
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our community guidelines help create a safe, inclusive, and positive environment for everyone. 
+              By participating in LifeFlow, you agree to follow these guidelines.
             </p>
           </div>
 
-          <div className="space-y-8">
-            {/* Core Values */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-6 w-6 text-red-500" />
-                  Our Core Values
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose prose-gray max-w-none">
-                <p className="text-gray-700 mb-4">
-                  LifeFlow is built on the foundation of meaningful connections and positive interactions. 
-                  Our community thrives when everyone feels safe, respected, and valued.
-                </p>
-                <ul className="space-y-2 text-gray-700">
-                  <li>• <strong>Respect:</strong> Treat all members with dignity and kindness</li>
-                  <li>• <strong>Authenticity:</strong> Be genuine in your interactions and posts</li>
-                  <li>• <strong>Inclusivity:</strong> Welcome people of all backgrounds and perspectives</li>
-                  <li>• <strong>Safety:</strong> Maintain a secure environment for everyone</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Expected Behavior */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-6 w-6 text-green-500" />
-                  Expected Behavior
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-3">✅ Do:</h4>
-                    <ul className="space-y-2 text-gray-700">
-                      <li>• Be kind and respectful in all interactions</li>
-                      <li>• Share meaningful and appropriate content</li>
-                      <li>• Respect others' privacy and boundaries</li>
-                      <li>• Report violations when you see them</li>
-                      <li>• Give constructive feedback and support</li>
-                      <li>• Use appropriate language and tone</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-3">❌ Don't:</h4>
-                    <ul className="space-y-2 text-gray-700">
-                      <li>• Engage in harassment or bullying</li>
-                      <li>• Share inappropriate or offensive content</li>
-                      <li>• Spam or flood the platform</li>
-                      <li>• Share personal information of others</li>
-                      <li>• Use hate speech or discriminatory language</li>
-                      <li>• Impersonate others or create fake accounts</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Content Guidelines */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="h-6 w-6 text-blue-500" />
-                  Content Guidelines
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Appropriate Content</h4>
-                    <p className="text-gray-700">
-                      Share content that is relevant, respectful, and adds value to our community. 
-                      This includes personal experiences, helpful advice, interesting discussions, 
-                      and positive interactions.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Prohibited Content</h4>
-                    <ul className="space-y-1 text-gray-700">
-                      <li>• Illegal activities or content</li>
-                      <li>• Adult or sexually explicit material</li>
-                      <li>• Violence, threats, or self-harm content</li>
-                      <li>• Hate speech, discrimination, or harassment</li>
-                      <li>• Misinformation or harmful false information</li>
-                      <li>• Spam, scams, or fraudulent activities</li>
-                      <li>• Copyright infringing material</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Privacy & Safety */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-6 w-6 text-purple-500" />
-                  Privacy & Safety
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Age Requirements</h4>
-                    <p className="text-gray-700">
-                      You must be at least 16 years old to use LifeFlow. We take age verification 
-                      seriously and may request verification if needed.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Personal Information</h4>
-                    <p className="text-gray-700">
-                      Never share personal information such as home addresses, phone numbers, 
-                      financial information, or passwords. Keep your personal details private 
-                      and report anyone who asks for this information.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Meeting Safety</h4>
-                    <p className="text-gray-700">
-                      If you choose to meet someone from our platform in person, always meet in 
-                      public places, tell someone where you're going, and trust your instincts.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Enforcement */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                  Enforcement & Consequences
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-gray-700">
-                    Violations of these guidelines may result in the following actions:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                      <h4 className="font-semibold text-yellow-800">Warning</h4>
-                      <p className="text-sm text-yellow-700 mt-2">
-                        First-time minor violations receive a warning and guidance
-                      </p>
+          {/* Core Guidelines */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center mb-8">Core Guidelines</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {guidelines.map((guideline, index) => (
+                <Card key={index} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      {guideline.icon}
+                      {guideline.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-6">{guideline.description}</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold text-green-700 mb-2 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Do
+                        </h4>
+                        <ul className="space-y-1">
+                          {guideline.dos.map((item, i) => (
+                            <li key={i} className="text-sm text-gray-600">• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-red-700 mb-2 flex items-center">
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Don't
+                        </h4>
+                        <ul className="space-y-1">
+                          {guideline.donts.map((item, i) => (
+                            <li key={i} className="text-sm text-gray-600">• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                    <div className="text-center p-4 bg-orange-50 rounded-lg">
-                      <h4 className="font-semibold text-orange-800">Temporary Suspension</h4>
-                      <p className="text-sm text-orange-700 mt-2">
-                        Repeated or serious violations result in temporary restrictions
-                      </p>
-                    </div>
-                    <div className="text-center p-4 bg-red-50 rounded-lg">
-                      <h4 className="font-semibold text-red-800">Permanent Ban</h4>
-                      <p className="text-sm text-red-700 mt-2">
-                        Severe or continued violations lead to permanent removal
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Reporting */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Reporting Violations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-4">
-                  If you see content or behavior that violates these guidelines, please report it 
-                  immediately. You can report violations by:
-                </p>
-                <ul className="space-y-2 text-gray-700">
-                  <li>• Using the report button on posts or profiles</li>
-                  <li>• Contacting our moderation team directly</li>
-                  <li>• Using the community feedback form</li>
-                </ul>
-                <p className="text-gray-700 mt-4">
-                  All reports are reviewed promptly and confidentially. We appreciate your help 
-                  in maintaining a positive community environment.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Updates */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Guidelines Updates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700">
-                  These guidelines may be updated from time to time to reflect changes in our 
-                  community, legal requirements, or platform features. We will notify users of 
-                  significant changes and encourage regular review of these guidelines.
-                </p>
-                <p className="text-gray-600 text-sm mt-4">
-                  Last updated: {new Date().toLocaleDateString()}
-                </p>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
+
+          {/* Violations and Consequences */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center mb-8">Violations and Consequences</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {violations.map((violation, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Badge className={violation.color}>{violation.severity}</Badge>
+                      Violations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4">
+                      <h4 className="font-semibold mb-2">Examples:</h4>
+                      <ul className="space-y-1">
+                        {violation.examples.map((example, i) => (
+                          <li key={i} className="text-sm text-gray-600">• {example}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Consequences:</h4>
+                      <ul className="space-y-1">
+                        {violation.consequences.map((consequence, i) => (
+                          <li key={i} className="text-sm text-gray-600">• {consequence}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Reporting */}
+          <Card className="mb-16">
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-3">
+                <AlertTriangle className="h-6 w-6 text-orange-500" />
+                Reporting Violations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">How to Report</h3>
+                  <ol className="space-y-2 text-gray-600">
+                    <li>1. Use the report button on any post, comment, or profile</li>
+                    <li>2. Select the type of violation from the dropdown menu</li>
+                    <li>3. Provide additional context if needed</li>
+                    <li>4. Submit your report for review</li>
+                  </ol>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">What Happens Next</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li>• Reports are reviewed within 24 hours</li>
+                    <li>• We investigate all reports thoroughly</li>
+                    <li>• Action is taken based on our guidelines</li>
+                    <li>• You'll receive updates on serious violations</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appeal Process */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Appeal Process</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                If you believe your account has been penalized unfairly, you can appeal the decision:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-blue-600 font-bold">1</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">Submit Appeal</h4>
+                  <p className="text-sm text-gray-600">Contact our support team with details about your case</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-blue-600 font-bold">2</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">Review Process</h4>
+                  <p className="text-sm text-gray-600">We'll review your case within 3-5 business days</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-blue-600 font-bold">3</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">Decision</h4>
+                  <p className="text-sm text-gray-600">You'll receive our final decision via email</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
       <Footer />
     </div>
   );

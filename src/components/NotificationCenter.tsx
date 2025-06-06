@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Heart, MessageCircle, UserPlus, Calendar, Check, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -16,107 +17,50 @@ interface Notification {
   message: string;
   is_read: boolean;
   created_at: string;
-  actor?: {
-    full_name?: string;
-    username?: string;
-    avatar_url?: string;
-  };
+  user_id: string;
 }
 
 const NotificationCenter = () => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const { data: notifications, loading } = useRealtime<Notification>(
+    'notifications',
+    user ? { column: 'user_id', value: user.id } : undefined
+  );
+
   useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      
-      // Real-time subscription for new notifications
-      const channel = supabase
-        .channel('notifications')
-        .on('postgres_changes', 
-          { event: 'INSERT', schema: 'public', table: 'notifications' },
-          () => fetchNotifications()
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
+    if (notifications) {
+      setUnreadCount(notifications.filter(n => !n.is_read).length);
     }
-  }, [user]);
+  }, [notifications]);
 
-  const fetchNotifications = async () => {
+  const markAsRead = async (notificationId: string) => {
     if (!user) return;
 
     try {
-      // Mock notifications since we don't have a notifications table yet
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'like',
-          title: 'New Like',
-          message: 'John Doe liked your post',
-          is_read: false,
-          created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-          actor: {
-            full_name: 'John Doe',
-            username: 'johndoe',
-            avatar_url: undefined
-          }
-        },
-        {
-          id: '2',
-          type: 'comment',
-          title: 'New Comment',
-          message: 'Jane Smith commented on your video',
-          is_read: false,
-          created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-          actor: {
-            full_name: 'Jane Smith',
-            username: 'janesmith',
-            avatar_url: undefined
-          }
-        },
-        {
-          id: '3',
-          type: 'follow',
-          title: 'New Follower',
-          message: 'Mike Johnson started following you',
-          is_read: true,
-          created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          actor: {
-            full_name: 'Mike Johnson',
-            username: 'mikejohnson',
-            avatar_url: undefined
-          }
-        }
-      ];
-
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.is_read).length);
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId)
+        .eq('user_id', user.id);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('Error marking notification as read:', error);
     }
   };
 
-  const markAsRead = async (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, is_read: true }
-          : notification
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
+  const markAllAsRead = async () => {
+    if (!user) return;
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, is_read: true }))
-    );
-    setUnreadCount(0);
+    try {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -135,6 +79,26 @@ const NotificationCenter = () => {
         return <Bell className="h-4 w-4 text-gray-500" />;
     }
   };
+
+  if (!user) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardContent className="p-6 text-center">
+          <p className="text-gray-500">Please sign in to view notifications</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardContent className="p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -176,18 +140,9 @@ const NotificationCenter = () => {
                 >
                   <div className="flex gap-3">
                     <div className="flex-shrink-0">
-                      {notification.actor ? (
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={notification.actor.avatar_url} />
-                          <AvatarFallback>
-                            {notification.actor.full_name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                      )}
+                      <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        {getNotificationIcon(notification.type)}
+                      </div>
                     </div>
 
                     <div className="flex-1 min-w-0">

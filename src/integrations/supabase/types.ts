@@ -147,6 +147,171 @@ export type Database = {
         }
         Relationships: []
       }
+      discussion_replies: {
+        Row: {
+          content: string
+          created_at: string
+          discussion_id: string
+          downvotes: number | null
+          id: string
+          upvotes: number | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          discussion_id: string
+          downvotes?: number | null
+          id?: string
+          upvotes?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          discussion_id?: string
+          downvotes?: number | null
+          id?: string
+          upvotes?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      discussion_votes: {
+        Row: {
+          created_at: string
+          discussion_id: string
+          id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          discussion_id: string
+          id?: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: []
+      }
+      discussions: {
+        Row: {
+          author_id: string
+          category: string | null
+          content: string
+          created_at: string
+          downvotes: number | null
+          id: string
+          replies_count: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          upvotes: number | null
+        }
+        Insert: {
+          author_id: string
+          category?: string | null
+          content: string
+          created_at?: string
+          downvotes?: number | null
+          id?: string
+          replies_count?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          upvotes?: number | null
+        }
+        Update: {
+          author_id?: string
+          category?: string | null
+          content?: string
+          created_at?: string
+          downvotes?: number | null
+          id?: string
+          replies_count?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          upvotes?: number | null
+        }
+        Relationships: []
+      }
+      event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          rsvp_status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          rsvp_status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          rsvp_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          current_attendees: number | null
+          description: string | null
+          end_date: string
+          event_type: string | null
+          id: string
+          location: string | null
+          max_attendees: number | null
+          organizer_id: string
+          start_date: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          current_attendees?: number | null
+          description?: string | null
+          end_date: string
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          max_attendees?: number | null
+          organizer_id: string
+          start_date: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          current_attendees?: number | null
+          description?: string | null
+          end_date?: string
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          max_attendees?: number | null
+          organizer_id?: string
+          start_date?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -399,6 +564,84 @@ export type Database = {
           updated_at?: string
           user_id?: string
           viewer_count?: number | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
         }
         Relationships: []
       }
