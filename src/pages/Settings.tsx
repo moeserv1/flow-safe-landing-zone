@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import UserAccessControl from '@/components/UserAccessControl';
+import JobApplicationSystem from '@/components/JobApplicationSystem';
+import BlogManagement from '@/components/BlogManagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { User, Shield, Bell, Palette, Eye } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Shield, Bell, Palette, Eye, Briefcase, BookOpen } from 'lucide-react';
 
 interface PrivacySettings {
   show_age: boolean;
@@ -20,6 +24,7 @@ interface PrivacySettings {
   allow_friend_requests: boolean;
   show_online_status: boolean;
   allow_messages: boolean;
+  [key: string]: boolean; // Index signature for JSON compatibility
 }
 
 const Settings = () => {
@@ -140,15 +145,23 @@ const Settings = () => {
       <Navigation />
       
       <div className="pt-24 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-600 mt-2">Manage your account and privacy preferences</p>
+            <h1 className="text-3xl font-bold text-gray-900">Settings & Management</h1>
+            <p className="text-gray-600 mt-2">Manage your account, privacy, content, and applications</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Profile Settings */}
-            <div className="lg:col-span-2 space-y-6">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="privacy">Privacy</TabsTrigger>
+              <TabsTrigger value="access">Access Control</TabsTrigger>
+              <TabsTrigger value="jobs">Job Applications</TabsTrigger>
+              <TabsTrigger value="blog">Blog Management</TabsTrigger>
+              <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -194,10 +207,19 @@ const Settings = () => {
                       onChange={(e) => setProfile({...profile, location: e.target.value})}
                     />
                   </div>
+
+                  <Button 
+                    onClick={updateProfile} 
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Saving...' : 'Save Profile'}
+                  </Button>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              {/* Privacy Settings */}
+            <TabsContent value="privacy" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -278,74 +300,102 @@ const Settings = () => {
                       }
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5" />
-                    Notifications
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Manage your notification preferences
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    Configure Notifications
+                  <Button 
+                    onClick={updateProfile} 
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Saving...' : 'Save Privacy Settings'}
                   </Button>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5" />
-                    Appearance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Customize your experience
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    Theme Settings
-                  </Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="access">
+              <UserAccessControl />
+            </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5" />
-                    Analytics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">
-                    View your content performance
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+            <TabsContent value="jobs">
+              <JobApplicationSystem />
+            </TabsContent>
 
-          <div className="mt-8 text-center">
-            <Button 
-              onClick={updateProfile} 
-              disabled={loading}
-              className="px-8"
-            >
-              {loading ? 'Saving...' : 'Save Settings'}
-            </Button>
-          </div>
+            <TabsContent value="blog">
+              <BlogManagement />
+            </TabsContent>
+
+            <TabsContent value="preferences" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="h-5 w-5" />
+                      Notifications
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Manage your notification preferences
+                    </p>
+                    <Button variant="outline" className="w-full">
+                      Configure Notifications
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="h-5 w-5" />
+                      Appearance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Customize your experience
+                    </p>
+                    <Button variant="outline" className="w-full">
+                      Theme Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      Analytics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      View your content performance
+                    </p>
+                    <Button variant="outline" className="w-full">
+                      View Analytics
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Content Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Manage your content preferences
+                    </p>
+                    <Button variant="outline" className="w-full">
+                      Content Settings
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
