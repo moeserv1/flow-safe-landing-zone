@@ -23,6 +23,8 @@ import CommunityGuidelines from "./pages/CommunityGuidelines";
 import Settings from "./pages/Settings";
 import Creator from "./pages/Creator";
 import CommunitySpacesPage from "./pages/CommunitySpacesPage";
+import Discover from "./pages/Discover";
+import Discussions from "./pages/Discussions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +43,8 @@ const App = () => (
             <Route path="/user-profile/:userId?" element={<UserProfilePage />} />
             <Route path="/community" element={<Community />} />
             <Route path="/spaces" element={<CommunitySpacesPage />} />
+            <Route path="/discussions" element={<Discussions />} />
+            <Route path="/discover" element={<Discover />} />
             <Route path="/videos" element={<Videos />} />
             <Route path="/live-streams" element={<LiveStreams />} />
             <Route path="/social" element={<SocialMedia />} />

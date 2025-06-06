@@ -9,14 +9,21 @@ import SocialPostCard from '@/components/SocialPostCard';
 import AdSenseAd from '@/components/AdSenseAd';
 import CommunityChat from '@/components/CommunityChat';
 import FriendsChat from '@/components/FriendsChat';
+import PostCard from '@/components/PostCard';
+import StoryViewer from '@/components/StoryViewer';
+import NotificationCenter from '@/components/NotificationCenter';
+import FriendsList from '@/components/FriendsChat';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, MessageCircle, Share, TrendingUp, Users, Calendar } from 'lucide-react';
+import { Heart, MessageCircle, Share, TrendingUp, Users, Calendar, Bell, Plus } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 const SocialMedia = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [stories, setStories] = useState([]);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalLikes: 0,
@@ -28,6 +35,7 @@ const SocialMedia = () => {
     if (user) {
       fetchPosts();
       fetchStats();
+      fetchStories();
     }
   }, [user]);
 
@@ -54,27 +62,29 @@ const SocialMedia = () => {
     }
   };
 
+  const fetchStories = async () => {
+    // Mock stories data - in real app this would come from database
+    setStories([]);
+  };
+
   const fetchStats = async () => {
     // Get total posts
     const { count: postsCount } = await supabase
       .from('social_posts')
       .select('*', { count: 'exact', head: true });
 
-    // Get total likes
     const { data: likesData } = await supabase
       .from('social_posts')
       .select('likes_count');
     
     const totalLikes = likesData?.reduce((sum, post) => sum + (post.likes_count || 0), 0) || 0;
 
-    // Get total comments
     const { data: commentsData } = await supabase
       .from('social_posts')
       .select('comments_count');
     
     const totalComments = commentsData?.reduce((sum, post) => sum + (post.comments_count || 0), 0) || 0;
 
-    // Get active users (users with recent posts)
     const { count: activeUsers } = await supabase
       .from('social_posts')
       .select('author_id', { count: 'exact', head: true })
@@ -100,6 +110,19 @@ const SocialMedia = () => {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Connect, share, and engage with our vibrant community. Share your thoughts, moments, and experiences.
             </p>
+          </div>
+
+          {/* Stories Section */}
+          <div className="mb-8">
+            <div className="flex items-center space-x-4 overflow-x-auto pb-4">
+              <Button
+                variant="outline"
+                className="flex-shrink-0 h-20 w-20 rounded-full border-dashed"
+              >
+                <Plus className="h-6 w-6" />
+              </Button>
+              {/* Story circles would go here */}
+            </div>
           </div>
 
           {/* Stats */}
@@ -134,16 +157,16 @@ const SocialMedia = () => {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-3 space-y-6">
               {/* Create Post */}
               <CreateSocialPost onPostCreated={fetchPosts} />
 
               {/* Posts Feed */}
               <div className="space-y-6">
                 {posts.map((post) => (
-                  <SocialPostCard key={post.id} post={post} />
+                  <PostCard key={post.id} post={post} />
                 ))}
                 
                 {posts.length === 0 && (
@@ -160,6 +183,23 @@ const SocialMedia = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Notifications */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="w-full"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Notifications
+                </Button>
+                {showNotifications && (
+                  <div className="absolute top-12 right-0 z-50">
+                    <NotificationCenter />
+                  </div>
+                )}
+              </div>
+
               {/* AdSense Ad */}
               <AdSenseAd 
                 adSlot="1234567890"
@@ -225,6 +265,14 @@ const SocialMedia = () => {
           </div>
         </div>
       </div>
+
+      {/* Story Viewer */}
+      {showStoryViewer && stories.length > 0 && (
+        <StoryViewer
+          stories={stories}
+          onClose={() => setShowStoryViewer(false)}
+        />
+      )}
 
       {/* Chat Components */}
       <CommunityChat />

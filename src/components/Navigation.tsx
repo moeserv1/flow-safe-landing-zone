@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Heart, Upload, Users, Video, BookOpen, Briefcase, MessageCircle } from "lucide-react";
+import { Menu, Heart, Upload, Users, Video, BookOpen, Briefcase, MessageCircle, Search, Calendar } from "lucide-react";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -14,6 +14,8 @@ const Navigation = () => {
   const navItems = [
     { href: "/", label: "Home", icon: Heart },
     { href: "/community", label: "Community", icon: Users },
+    { href: "/discussions", label: "Discussions", icon: MessageCircle },
+    { href: "/discover", label: "Discover", icon: Search },
     { href: "/social", label: "Social", icon: MessageCircle },
     { href: "/videos", label: "Videos", icon: Video },
     { href: "/blog", label: "Blog", icon: BookOpen },
@@ -35,7 +37,7 @@ const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
