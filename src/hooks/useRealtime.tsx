@@ -28,9 +28,10 @@ export const useRealtime = <T extends TableName>(
         const { data: initialData, error } = await query;
         if (error) throw error;
 
-        setData((initialData as TableRow<T>[]) || []);
+        setData((initialData || []) as TableRow<T>[]);
       } catch (error) {
         console.error(`Error fetching initial data from ${table}:`, error);
+        setData([]);
       } finally {
         setLoading(false);
       }

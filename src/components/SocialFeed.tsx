@@ -72,11 +72,14 @@ const SocialFeed = () => {
         }
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      // Ignore duplicate key errors for likes
+      if (!error.message.includes('duplicate')) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   };
 
