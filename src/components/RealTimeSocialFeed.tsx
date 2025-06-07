@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,16 @@ const RealTimeSocialFeed = () => {
   const [posting, setPosting] = useState(false);
   
   const { data: posts, loading } = useRealtime('social_posts');
+  const { data: profiles } = useRealtime('profiles');
+
+  // Join posts with profile data
+  const postsWithProfiles = posts.map((post: any) => {
+    const profile = profiles.find((p: any) => p.id === post.author_id);
+    return {
+      ...post,
+      profiles: profile || { full_name: 'Anonymous User', avatar_url: null }
+    };
+  }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const createPost = async () => {
     if (!user || !newPost.trim()) return;
@@ -69,26 +79,53 @@ const RealTimeSocialFeed = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // Check if already liked
+      const { data: existingLike } = await supabase
         .from('post_likes')
-        .insert({ post_id: postId, user_id: user.id });
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single();
 
-      if (error && !error.message.includes('duplicate')) throw error;
-
-      // Update likes count
-      const { error: updateError } = await supabase.rpc('increment_likes_count', { 
-        post_id: postId
-      });
-
-      if (updateError) {
-        console.error('Error updating likes count:', updateError);
+      if (existingLike) {
+        // Unlike
+        await supabase
+          .from('post_likes')
+          .delete()
+          .eq('id', existingLike.id);
+        
+        // Decrease likes count
+        const post = posts.find((p: any) => p.id === postId);
+        if (post) {
+          await supabase
+            .from('social_posts')
+            .update({ likes_count: Math.max(0, (post.likes_count || 0) - 1) })
+            .eq('id', postId);
+        }
+      } else {
+        // Like
+        await supabase
+          .from('post_likes')
+          .insert({ post_id: postId, user_id: user.id });
+        
+        // Increase likes count
+        const post = posts.find((p: any) => p.id === postId);
+        if (post) {
+          await supabase
+            .from('social_posts')
+            .update({ likes_count: (post.likes_count || 0) + 1 })
+            .eq('id', postId);
+        }
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      // Ignore duplicate key errors for likes
+      if (!error.message.includes('duplicate')) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -129,7 +166,7 @@ const RealTimeSocialFeed = () => {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {posts.map((post: any) => (
+        {postsWithProfiles.map((post: any) => (
           <Card key={post.id}>
             <CardHeader className="pb-3">
               <div className="flex items-center space-x-3">
@@ -183,7 +220,7 @@ const RealTimeSocialFeed = () => {
         ))}
       </div>
 
-      {posts.length === 0 && (
+      {postsWithProfiles.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">No posts yet. Be the first to share something!</p>
         </div>
