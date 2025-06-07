@@ -2,7 +2,7 @@
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
-import RealTimeSocialFeed from '@/components/RealTimeSocialFeed';
+import SocialFeed from '@/components/SocialFeed';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -15,11 +15,15 @@ const Index = () => {
       <div className="pt-16">
         {user ? (
           <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-center mb-4">Welcome back to LifeFlow!</h1>
-              <p className="text-center text-gray-600">Stay connected with your community</p>
+            <div className="mb-8 text-center">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                Welcome back to LifeFlow!
+              </h1>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Stay connected with your community and discover what's happening
+              </p>
             </div>
-            <RealTimeSocialFeed />
+            <SocialFeed />
           </div>
         ) : (
           <>

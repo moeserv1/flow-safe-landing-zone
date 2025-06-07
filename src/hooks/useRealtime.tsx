@@ -9,7 +9,7 @@ type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
 
 export const useRealtime = <T extends TableName>(
   table: T,
-  filter?: { column: keyof TableRow<T>; value: any }
+  filter?: { column: string; value: any }
 ) => {
   const [data, setData] = useState<TableRow<T>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ export const useRealtime = <T extends TableName>(
         let query = supabase.from(table).select('*');
         
         if (filter) {
-          query = query.eq(filter.column as string, filter.value);
+          query = query.eq(filter.column, filter.value);
         }
 
         const { data: initialData, error } = await query;
@@ -43,7 +43,7 @@ export const useRealtime = <T extends TableName>(
           event: 'INSERT',
           schema: 'public',
           table: table,
-          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
+          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
         }, (payload) => {
           setData(prev => [payload.new as TableRow<T>, ...prev]);
         })
@@ -51,7 +51,7 @@ export const useRealtime = <T extends TableName>(
           event: 'UPDATE',
           schema: 'public',
           table: table,
-          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
+          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
         }, (payload) => {
           setData(prev => prev.map(item => 
             (item as any).id === (payload.new as any).id ? payload.new as TableRow<T> : item
@@ -61,7 +61,7 @@ export const useRealtime = <T extends TableName>(
           event: 'DELETE',
           schema: 'public',
           table: table,
-          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
+          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
         }, (payload) => {
           setData(prev => prev.filter(item => (item as any).id !== (payload.old as any).id));
         })

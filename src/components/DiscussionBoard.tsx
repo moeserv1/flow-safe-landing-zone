@@ -1,34 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, ThumbsUp, ThumbsDown, Pin, Search, Plus } from 'lucide-react';
+import { MessageSquare, ThumbsUp, ThumbsDown, Search, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Discussion {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  author_id: string;
-  upvotes: number;
-  downvotes: number;
-  replies_count: number;
-  created_at: string;
-  profiles?: {
-    full_name?: string;
-    username?: string;
-    avatar_url?: string;
-  };
-}
 
 const DiscussionBoard = () => {
   const { user } = useAuth();
@@ -51,9 +34,19 @@ const DiscussionBoard = () => {
     { id: 'showcase', label: 'Showcase' }
   ];
 
-  const { data: discussions, loading } = useRealtime<Discussion>('discussions');
+  const { data: discussions, loading } = useRealtime('discussions');
+  const { data: profiles } = useRealtime('profiles');
 
-  const filteredDiscussions = discussions.filter(discussion => {
+  // Join discussions with profile data
+  const discussionsWithProfiles = discussions.map((discussion: any) => {
+    const profile = profiles.find((p: any) => p.id === discussion.author_id);
+    return {
+      ...discussion,
+      profiles: profile || { full_name: 'Anonymous User', avatar_url: null }
+    };
+  });
+
+  const filteredDiscussions = discussionsWithProfiles.filter((discussion: any) => {
     const matchesCategory = selectedCategory === 'all' || discussion.category === selectedCategory;
     const matchesSearch = searchQuery === '' || 
       discussion.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,6 +116,20 @@ const DiscussionBoard = () => {
             user_id: user.id,
             vote_type: voteType
           });
+      }
+
+      // Update discussion vote counts
+      const discussion = discussions.find((d: any) => d.id === threadId);
+      if (discussion) {
+        const increment = voteType === 'up' ? 1 : -1;
+        const field = voteType === 'up' ? 'upvotes' : 'downvotes';
+        
+        await supabase
+          .from('discussions')
+          .update({ 
+            [field]: Math.max(0, (discussion[field] || 0) + increment)
+          })
+          .eq('id', threadId);
       }
 
       toast({
@@ -224,7 +231,7 @@ const DiscussionBoard = () => {
 
       {/* Threads List */}
       <div className="space-y-4">
-        {filteredDiscussions.map((discussion) => (
+        {filteredDiscussions.map((discussion: any) => (
           <Card key={discussion.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex gap-4">
@@ -240,7 +247,7 @@ const DiscussionBoard = () => {
                     <ThumbsUp className="h-4 w-4" />
                   </Button>
                   <span className="text-sm font-medium">
-                    {discussion.upvotes - discussion.downvotes}
+                    {(discussion.upvotes || 0) - (discussion.downvotes || 0)}
                   </span>
                   <Button
                     variant="ghost"
@@ -278,7 +285,7 @@ const DiscussionBoard = () => {
                           </AvatarFallback>
                         </Avatar>
                         <span className="text-sm text-gray-600">
-                          {discussion.profiles?.full_name || discussion.profiles?.username || 'Anonymous'}
+                          {discussion.profiles?.full_name || 'Anonymous'}
                         </span>
                       </div>
                       <span className="text-sm text-gray-500">
@@ -289,7 +296,7 @@ const DiscussionBoard = () => {
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="h-4 w-4" />
-                        <span>{discussion.replies_count} replies</span>
+                        <span>{discussion.replies_count || 0} replies</span>
                       </div>
                     </div>
                   </div>

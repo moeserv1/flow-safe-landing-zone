@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,20 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, Users, Plus, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  location: string;
-  organizer_id: string;
-  max_attendees: number;
-  current_attendees: number;
-  event_type: string;
-  created_at: string;
-}
 
 const EventsCalendar = () => {
   const { user } = useAuth();
@@ -40,7 +26,7 @@ const EventsCalendar = () => {
     event_type: 'meetup'
   });
 
-  const { data: events, loading } = useRealtime<Event>('events');
+  const { data: events, loading } = useRealtime('events');
 
   const createEvent = async () => {
     if (!user || !newEvent.title.trim()) return;
@@ -93,6 +79,15 @@ const EventsCalendar = () => {
         });
 
       if (error) throw error;
+
+      // Update attendee count
+      const event = events.find((e: any) => e.id === eventId);
+      if (event) {
+        await supabase
+          .from('events')
+          .update({ current_attendees: (event.current_attendees || 0) + 1 })
+          .eq('id', eventId);
+      }
 
       toast({
         title: "Success",
@@ -209,7 +204,7 @@ const EventsCalendar = () => {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
+        {events.map((event: any) => (
           <Card key={event.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -237,7 +232,7 @@ const EventsCalendar = () => {
                 )}
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-purple-500" />
-                  <span>{event.current_attendees}/{event.max_attendees} attendees</span>
+                  <span>{event.current_attendees || 0}/{event.max_attendees || 0} attendees</span>
                 </div>
               </div>
 
@@ -245,10 +240,10 @@ const EventsCalendar = () => {
                 <Button
                   size="sm"
                   onClick={() => joinEvent(event.id)}
-                  disabled={!user || event.current_attendees >= event.max_attendees}
+                  disabled={!user || (event.current_attendees || 0) >= (event.max_attendees || 0)}
                   className="flex-1"
                 >
-                  {event.current_attendees >= event.max_attendees ? 'Full' : 'Join Event'}
+                  {(event.current_attendees || 0) >= (event.max_attendees || 0) ? 'Full' : 'Join Event'}
                 </Button>
               </div>
             </CardContent>
