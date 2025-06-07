@@ -3,37 +3,26 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Heart, MessageCircle, UserPlus, Calendar, Check, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 
-interface Notification {
-  id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'event';
-  title: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
-  user_id: string;
-}
-
 const NotificationCenter = () => {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const { data: notifications, loading } = useRealtime<Notification>(
-    'notifications',
-    user ? { column: 'user_id', value: user.id } : undefined
-  );
+  const { data: notifications, loading } = useRealtime('notifications');
+
+  // Filter notifications for current user
+  const userNotifications = user ? notifications.filter((n: any) => n.user_id === user.id) : [];
 
   useEffect(() => {
-    if (notifications) {
-      setUnreadCount(notifications.filter(n => !n.is_read).length);
+    if (userNotifications) {
+      setUnreadCount(userNotifications.filter((n: any) => !n.is_read).length);
     }
-  }, [notifications]);
+  }, [userNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     if (!user) return;
@@ -124,14 +113,14 @@ const NotificationCenter = () => {
 
       <CardContent className="p-0">
         <div className="max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {userNotifications.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
               <Bell className="h-12 w-12 mx-auto mb-2 text-gray-300" />
               <p>No notifications yet</p>
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
+              {userNotifications.map((notification: any) => (
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-gray-50 transition-colors ${

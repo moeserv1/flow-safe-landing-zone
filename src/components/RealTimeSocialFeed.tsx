@@ -18,6 +18,8 @@ interface SocialPost {
   created_at: string;
   likes_count: number;
   comments_count: number;
+  media_url?: string;
+  media_type?: string;
   profiles?: {
     full_name?: string;
     avatar_url?: string;
@@ -30,7 +32,7 @@ const RealTimeSocialFeed = () => {
   const [newPost, setNewPost] = useState('');
   const [posting, setPosting] = useState(false);
   
-  const { data: posts, loading } = useRealtime<SocialPost>('social_posts');
+  const { data: posts, loading } = useRealtime('social_posts');
 
   const createPost = async () => {
     if (!user || !newPost.trim()) return;
@@ -71,22 +73,22 @@ const RealTimeSocialFeed = () => {
         .from('post_likes')
         .insert({ post_id: postId, user_id: user.id });
 
-      if (error) throw error;
+      if (error && !error.message.includes('duplicate')) throw error;
 
       // Update likes count
-      await supabase.rpc('increment', { 
-        table_name: 'social_posts',
-        row_id: postId,
-        column_name: 'likes_count'
+      const { error: updateError } = await supabase.rpc('increment_likes_count', { 
+        post_id: postId
       });
-    } catch (error: any) {
-      if (!error.message.includes('duplicate')) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
+
+      if (updateError) {
+        console.error('Error updating likes count:', updateError);
       }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -127,7 +129,7 @@ const RealTimeSocialFeed = () => {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        {posts.map((post: any) => (
           <Card key={post.id}>
             <CardHeader className="pb-3">
               <div className="flex items-center space-x-3">
@@ -147,6 +149,17 @@ const RealTimeSocialFeed = () => {
             </CardHeader>
             <CardContent>
               <p className="mb-4">{post.content}</p>
+              {post.media_url && (
+                <div className="mb-4">
+                  {post.media_type === 'image' ? (
+                    <img src={post.media_url} alt="Post media" className="rounded-lg max-w-full h-auto" />
+                  ) : post.media_type === 'video' ? (
+                    <video controls className="rounded-lg max-w-full h-auto">
+                      <source src={post.media_url} type="video/mp4" />
+                    </video>
+                  ) : null}
+                </div>
+              )}
               <div className="flex items-center space-x-6 text-gray-500">
                 <Button
                   variant="ghost"
@@ -155,11 +168,11 @@ const RealTimeSocialFeed = () => {
                   className="flex items-center space-x-2"
                 >
                   <Heart className="h-4 w-4" />
-                  <span>{post.likes_count}</span>
+                  <span>{post.likes_count || 0}</span>
                 </Button>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <MessageCircle className="h-4 w-4" />
-                  <span>{post.comments_count}</span>
+                  <span>{post.comments_count || 0}</span>
                 </Button>
                 <Button variant="ghost" size="sm">
                   <Share className="h-4 w-4" />

@@ -2,12 +2,16 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import type { Database } from '@/integrations/supabase/types';
 
-export const useRealtime = <T,>(
-  table: string,
-  filter?: { column: string; value: any }
+type TableName = keyof Database['public']['Tables'];
+type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
+
+export const useRealtime = <T extends TableName>(
+  table: T,
+  filter?: { column: keyof TableRow<T>; value: any }
 ) => {
-  const [data, setData] = useState<T[]>([]);
+  const [data, setData] = useState<TableRow<T>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,13 +22,13 @@ export const useRealtime = <T,>(
         let query = supabase.from(table).select('*');
         
         if (filter) {
-          query = query.eq(filter.column, filter.value);
+          query = query.eq(filter.column as string, filter.value);
         }
 
         const { data: initialData, error } = await query;
         if (error) throw error;
 
-        setData(initialData || []);
+        setData((initialData as TableRow<T>[]) || []);
       } catch (error) {
         console.error(`Error fetching initial data from ${table}:`, error);
       } finally {
@@ -39,25 +43,25 @@ export const useRealtime = <T,>(
           event: 'INSERT',
           schema: 'public',
           table: table,
-          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
+          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
         }, (payload) => {
-          setData(prev => [payload.new as T, ...prev]);
+          setData(prev => [payload.new as TableRow<T>, ...prev]);
         })
         .on('postgres_changes', {
           event: 'UPDATE',
           schema: 'public',
           table: table,
-          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
+          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
         }, (payload) => {
           setData(prev => prev.map(item => 
-            (item as any).id === (payload.new as any).id ? payload.new as T : item
+            (item as any).id === (payload.new as any).id ? payload.new as TableRow<T> : item
           ));
         })
         .on('postgres_changes', {
           event: 'DELETE',
           schema: 'public',
           table: table,
-          filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
+          filter: filter ? `${String(filter.column)}=eq.${filter.value}` : undefined
         }, (payload) => {
           setData(prev => prev.filter(item => (item as any).id !== (payload.old as any).id));
         })
