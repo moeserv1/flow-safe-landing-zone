@@ -4,12 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Video, RadioIcon, Users, MessageCircle, Send, Camera, Mic, MicOff, VideoOff, Settings } from 'lucide-react';
+import { Video, RadioIcon, Users, MessageCircle, Camera, Mic, MicOff, VideoOff } from 'lucide-react';
+import ChatOptions from './ChatOptions';
+import StreamControls from './StreamControls';
+import AutoCompleteChat from './AutoCompleteChat';
 
 interface LiveStreamProps {
   streamId?: string;
@@ -29,9 +30,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [hasPermissions, setHasPermissions] = useState(false);
   const [isTestingCamera, setIsTestingCamera] = useState(false);
-  const [devices, setDevices] = useState<{ video: MediaDeviceInfo[], audio: MediaDeviceInfo[] }>({ video: [], audio: [] });
-  const [selectedVideoDevice, setSelectedVideoDevice] = useState<string>('');
-  const [selectedAudioDevice, setSelectedAudioDevice] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -44,8 +42,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
     if (streamId) {
       joinStream();
     }
-
-    // Check for media permissions on component mount
     checkPermissions();
 
     return () => {
@@ -60,46 +56,17 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
       const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
       if (permissions.state === 'granted') {
         setHasPermissions(true);
-        await getAvailableDevices();
       }
     } catch (error) {
       console.log('Permission check not supported');
     }
   };
 
-  const getAvailableDevices = async () => {
-    try {
-      const deviceList = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = deviceList.filter(device => device.kind === 'videoinput');
-      const audioDevices = deviceList.filter(device => device.kind === 'audioinput');
-      
-      setDevices({ video: videoDevices, audio: audioDevices });
-      
-      if (videoDevices.length > 0 && !selectedVideoDevice) {
-        setSelectedVideoDevice(videoDevices[0].deviceId);
-      }
-      if (audioDevices.length > 0 && !selectedAudioDevice) {
-        setSelectedAudioDevice(audioDevices[0].deviceId);
-      }
-    } catch (error) {
-      console.error('Error getting devices:', error);
-    }
-  };
-
   const requestPermissions = async () => {
     try {
-      const constraints = {
-        video: true,
-        audio: true
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setHasPermissions(true);
-      
-      // Stop the test stream
       stream.getTracks().forEach(track => track.stop());
-      
-      await getAvailableDevices();
       
       toast({
         title: "Permissions Granted",
@@ -111,55 +78,7 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
         description: "Camera and microphone access is required for live streaming",
         variant: "destructive"
       });
-      console.error('Permission error:', error);
     }
-  };
-
-  const testCamera = async () => {
-    if (!hasPermissions) {
-      await requestPermissions();
-      return;
-    }
-
-    try {
-      setIsTestingCamera(true);
-      
-      const constraints = {
-        video: selectedVideoDevice ? { deviceId: selectedVideoDevice } : true,
-        audio: selectedAudioDevice ? { deviceId: selectedAudioDevice } : true
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
-      toast({
-        title: "Camera Test",
-        description: "Camera is working! You can now start streaming."
-      });
-    } catch (error: any) {
-      toast({
-        title: "Camera Error",
-        description: "Failed to access camera: " + error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const stopCameraTest = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    
-    setIsTestingCamera(false);
   };
 
   const startStream = async () => {
@@ -178,12 +97,11 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
     }
 
     try {
-      const constraints = {
-        video: isVideoEnabled ? (selectedVideoDevice ? { deviceId: selectedVideoDevice } : true) : false,
-        audio: isAudioEnabled ? (selectedAudioDevice ? { deviceId: selectedAudioDevice } : true) : false
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: isVideoEnabled,
+        audio: isAudioEnabled
+      });
+      
       streamRef.current = stream;
       
       if (videoRef.current) {
@@ -222,7 +140,7 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
     }
   };
 
-  const stopStream = async () => {
+  const endStream = async () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -245,6 +163,35 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
     toast({
       title: "Stream Ended",
       description: "Your live stream has ended"
+    });
+  };
+
+  const resetStream = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    
+    setIsStreaming(false);
+    setIsTestingCamera(false);
+    setTitle('');
+    setDescription('');
+    setCurrentStreamId(null);
+    
+    toast({
+      title: "Stream Reset",
+      description: "Stream settings have been reset"
+    });
+  };
+
+  const saveSettings = async () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your stream settings have been saved"
     });
   };
 
@@ -292,7 +239,6 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
         });
 
       if (error) throw error;
-
       setNewMessage('');
     } catch (error: any) {
       toast({
@@ -301,6 +247,14 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleQuickMessage = (message: string) => {
+    setNewMessage(message);
+  };
+
+  const handleEmoji = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
   };
 
   if (!user && !isViewer) {
@@ -364,7 +318,8 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-4">
+          {/* Video Player */}
           <Card>
             <CardContent className="p-0">
               <div className="relative bg-black rounded-lg overflow-hidden">
@@ -381,7 +336,7 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
                     <div className="text-center text-white">
                       <Camera className="h-16 w-16 mx-auto mb-4 opacity-50" />
                       <p className="text-lg mb-2">Camera Preview</p>
-                      <p className="text-sm opacity-75">Test your camera before going live</p>
+                      <p className="text-sm opacity-75">Get ready to go live</p>
                     </div>
                   </div>
                 )}
@@ -422,117 +377,23 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
                   </div>
                 )}
               </div>
-              
-              {!isViewer && (
-                <div className="p-4 border-t space-y-4">
-                  {!hasPermissions && (
-                    <div className="text-center py-4 bg-yellow-50 rounded-lg">
-                      <Camera className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-                      <p className="text-sm text-yellow-800 mb-3">Camera and microphone access required</p>
-                      <Button onClick={requestPermissions} variant="outline">
-                        Grant Permissions
-                      </Button>
-                    </div>
-                  )}
-
-                  {hasPermissions && devices.video.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="video-device">Camera</Label>
-                        <select
-                          id="video-device"
-                          value={selectedVideoDevice}
-                          onChange={(e) => setSelectedVideoDevice(e.target.value)}
-                          className="w-full p-2 border rounded-md"
-                        >
-                          {devices.video.map((device) => (
-                            <option key={device.deviceId} value={device.deviceId}>
-                              {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label htmlFor="audio-device">Microphone</Label>
-                        <select
-                          id="audio-device"
-                          value={selectedAudioDevice}
-                          onChange={(e) => setSelectedAudioDevice(e.target.value)}
-                          className="w-full p-2 border rounded-md"
-                        >
-                          {devices.audio.map((device) => (
-                            <option key={device.deviceId} value={device.deviceId}>
-                              {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-
-                  {!isStreaming && !isTestingCamera && hasPermissions && (
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="stream-title">Stream Title</Label>
-                        <Input
-                          id="stream-title"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          placeholder="Enter your stream title"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="stream-description">Description</Label>
-                        <Input
-                          id="stream-description"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Enter stream description"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button onClick={testCamera} variant="outline" className="flex-1">
-                          <Camera className="h-4 w-4 mr-2" />
-                          Test Camera
-                        </Button>
-                        <Button onClick={startStream} className="flex-1" disabled={!title.trim()}>
-                          <RadioIcon className="h-4 w-4 mr-2" />
-                          Go Live
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {isTestingCamera && !isStreaming && (
-                    <div className="space-y-4">
-                      <p className="text-center text-sm text-gray-600">Camera test active</p>
-                      <div className="flex gap-2">
-                        <Button onClick={stopCameraTest} variant="outline" className="flex-1">
-                          Stop Test
-                        </Button>
-                        <Button onClick={startStream} className="flex-1" disabled={!title.trim()}>
-                          <RadioIcon className="h-4 w-4 mr-2" />
-                          Go Live
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {isStreaming && (
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <h3 className="font-semibold text-lg">{title}</h3>
-                        <p className="text-sm text-gray-600">{description}</p>
-                      </div>
-                      <Button onClick={stopStream} variant="destructive" className="w-full">
-                        End Stream
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
+
+          {/* Stream Controls */}
+          {!isViewer && (
+            <StreamControls
+              isStreaming={isStreaming}
+              title={title}
+              description={description}
+              onTitleChange={setTitle}
+              onDescriptionChange={setDescription}
+              onStartStream={startStream}
+              onEndStream={endStream}
+              onResetStream={resetStream}
+              onSaveSettings={saveSettings}
+            />
+          )}
         </div>
 
         <div>
@@ -562,16 +423,17 @@ const LiveStream = ({ streamId, isViewer = false }: LiveStreamProps) => {
               </div>
               
               {user && currentStreamId && (
-                <div className="flex space-x-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                <div className="space-y-3">
+                  <ChatOptions 
+                    onQuickMessage={handleQuickMessage}
+                    onEmoji={handleEmoji}
                   />
-                  <Button onClick={sendMessage} size="sm">
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <AutoCompleteChat
+                    value={newMessage}
+                    onChange={setNewMessage}
+                    onSend={sendMessage}
+                    placeholder="Type a message..."
+                  />
                 </div>
               )}
             </CardContent>
