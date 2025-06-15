@@ -28,7 +28,7 @@ interface PrivacySettings {
 }
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({
@@ -47,50 +47,27 @@ const Settings = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setProfile({
-          full_name: data.full_name || '',
-          username: data.username || '',
-          bio: data.bio || '',
-          location: data.location || '',
-          avatar_url: data.avatar_url || ''
-        });
-
-        // Parse privacy settings safely
-        const settings = data.privacy_settings as any;
-        if (settings && typeof settings === 'object') {
-          setPrivacySettings({
-            show_age: settings.show_age ?? true,
-            show_location: settings.show_location ?? false,
-            allow_friend_requests: settings.allow_friend_requests ?? true,
-            show_online_status: settings.show_online_status ?? true,
-            allow_messages: settings.allow_messages ?? true
-          });
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load profile settings",
-        variant: "destructive"
+    if (authProfile) {
+      setProfile({
+        full_name: authProfile.full_name || '',
+        username: authProfile.username || '',
+        bio: authProfile.bio || '',
+        location: authProfile.location || '',
+        avatar_url: authProfile.avatar_url || ''
       });
+
+      const settings = authProfile.privacy_settings as any;
+      if (settings && typeof settings === 'object') {
+        setPrivacySettings({
+          show_age: settings.show_age ?? true,
+          show_location: settings.show_location ?? false,
+          allow_friend_requests: settings.allow_friend_requests ?? true,
+          show_online_status: settings.show_online_status ?? true,
+          allow_messages: settings.allow_messages ?? true
+        });
+      }
     }
-  };
+  }, [authProfile]);
 
   const updateProfile = async () => {
     if (!user) return;

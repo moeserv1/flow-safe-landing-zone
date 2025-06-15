@@ -3,10 +3,14 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: Profile | null;
   loading: boolean;
   signUp: (email: string, password: string, userData: {
     firstName: string;
@@ -35,48 +39,64 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    const fetchSessionAndProfile = async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(profileData);
+      }
+      setLoading(false);
+    };
+
+    fetchSessionAndProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        // Update user presence when auth state changes
-        if (session?.user) {
-          setTimeout(() => {
-            supabase.from('user_presence').upsert({
-              user_id: session.user.id,
-              status: 'online',
-              updated_at: new Date().toISOString()
-            });
-          }, 0);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+          setProfile(profileData);
+          
+          if (event === 'SIGNED_IN') {
+             setTimeout(() => {
+                supabase.from('user_presence').upsert({
+                  user_id: currentUser.id,
+                  status: 'online',
+                  updated_at: new Date().toISOString()
+                }).then();
+             }, 0);
+          }
         } else {
-          setTimeout(() => {
-            if (user) {
-              supabase.from('user_presence').update({
-                status: 'offline',
-                last_seen: new Date().toISOString()
-              }).eq('user_id', user.id);
-            }
-          }, 0);
+          setProfile(null);
         }
+        setLoading(false);
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [user]);
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const signUp = async (email: string, password: string, userData: {
     firstName: string;
@@ -149,6 +169,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         description: error.message,
         variant: "destructive"
       });
+    } else {
+      setProfile(null);
     }
   };
 
@@ -156,6 +178,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider value={{
       user,
       session,
+      profile,
       loading,
       signUp,
       signIn,

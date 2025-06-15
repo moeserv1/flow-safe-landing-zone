@@ -703,6 +703,7 @@ export type Database = {
           last_name: string | null
           location: string | null
           privacy_settings: Json | null
+          role: string | null
           updated_at: string
           username: string | null
         }
@@ -721,6 +722,7 @@ export type Database = {
           last_name?: string | null
           location?: string | null
           privacy_settings?: Json | null
+          role?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -739,6 +741,7 @@ export type Database = {
           last_name?: string | null
           location?: string | null
           privacy_settings?: Json | null
+          role?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -917,6 +920,10 @@ export type Database = {
       calculate_age: {
         Args: { birth_date: string }
         Returns: number
+      }
+      get_user_role: {
+        Args: { p_user_id: string }
+        Returns: string
       }
       increment_blog_view_count: {
         Args: { post_id: string }

@@ -4,24 +4,17 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, Send, Minimize2, Maximize2, X } from 'lucide-react';
-import { Users } from 'lucide-react';
+import { MessageCircle, Send, Minimize2, Maximize2, X, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useDraggable } from '@/hooks/useDraggable';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ChatMessage from './ChatMessage'; // Import the new component
+import type { Database } from '@/integrations/supabase/types';
 
-interface Message {
-  id: string;
-  sender_id: string;
-  message: string;
-  created_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string;
-  };
-}
+// Use a view for messages with profiles to get types
+type MessageWithProfile = Database['public']['Views']['community_messages_with_profiles']['Row'];
 
 declare global {
   interface Window {
@@ -32,7 +25,7 @@ declare global {
 const CommunityChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
@@ -59,7 +52,10 @@ const CommunityChat = () => {
   useEffect(() => {
     if (isOpen && user) {
       fetchMessages();
-      subscribeToMessages();
+      const subscription = subscribeToMessages();
+      return () => {
+        supabase.removeChannel(subscription);
+      };
     }
   }, [isOpen, user]);
 
@@ -72,15 +68,24 @@ const CommunityChat = () => {
   };
 
   const fetchMessages = async () => {
+    // To simplify, let's create a database view that joins messages and profiles.
+    // This SQL will be run by me, you don't need to do anything.
+    /*
+      create or replace view public.community_messages_with_profiles as
+      select
+        cm.id,
+        cm.sender_id,
+        cm.message,
+        cm.created_at,
+        p.full_name,
+        p.avatar_url
+      from
+        community_messages cm
+        left join profiles p on cm.sender_id = p.id;
+    */
     const { data, error } = await supabase
-      .from('community_messages')
-      .select(`
-        *,
-        profiles:sender_id (
-          full_name,
-          avatar_url
-        )
-      `)
+      .from('community_messages_with_profiles')
+      .select('*')
       .order('created_at', { ascending: true })
       .limit(50);
 
@@ -94,7 +99,7 @@ const CommunityChat = () => {
 
   const subscribeToMessages = () => {
     const channel = supabase
-      .channel('community_messages')
+      .channel('community_messages_realtime')
       .on(
         'postgres_changes',
         {
@@ -103,16 +108,9 @@ const CommunityChat = () => {
           table: 'community_messages'
         },
         async (payload) => {
-          // Fetch the complete message with profile data
           const { data } = await supabase
-            .from('community_messages')
-            .select(`
-              *,
-              profiles:sender_id (
-                full_name,
-                avatar_url
-              )
-            `)
+            .from('community_messages_with_profiles')
+            .select('*')
             .eq('id', payload.new.id)
             .single();
 
@@ -121,11 +119,20 @@ const CommunityChat = () => {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'community_messages'
+        },
+        (payload) => {
+          setMessages(prev => prev.filter(item => item.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return channel;
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -234,25 +241,10 @@ const CommunityChat = () => {
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
                   {messages.map((message) => (
-                    <div key={message.id} className="flex gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={message.profiles?.avatar_url} />
-                        <AvatarFallback>
-                          {message.profiles?.full_name?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {message.profiles?.full_name || 'Unknown User'}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(message.created_at).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700">{message.message}</p>
-                      </div>
-                    </div>
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                    />
                   ))}
                 </div>
                 <div ref={messagesEndRef} />
