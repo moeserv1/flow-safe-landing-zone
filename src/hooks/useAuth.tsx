@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,7 @@ interface AuthContextType {
   }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  signOutFromAllDevices: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,18 +46,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     setLoading(true);
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-          setProfile(profileData);
+          // Defer async profile fetching to not block the auth listener
+          setTimeout(async () => {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
+            setProfile(profileData);
+          }, 0);
           
           if (event === 'SIGNED_IN') {
              setTimeout(() => {
@@ -156,6 +159,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const signOutFromAllDevices = async () => {
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
+    if (error) {
+      toast({
+        title: "Sign Out Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      setProfile(null);
+      toast({
+        title: "Success",
+        description: "You have been signed out from all devices."
+      });
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -164,7 +184,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      signOutFromAllDevices
     }}>
       {children}
     </AuthContext.Provider>
