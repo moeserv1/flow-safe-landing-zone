@@ -15,19 +15,17 @@ export const useRealtime = <T extends TableName>(
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let channel: RealtimeChannel;
+    let channel: RealtimeChannel | null = null;
+    let unsubscribed = false;
 
     const fetchInitialData = async () => {
       try {
         let query = supabase.from(table).select('*');
-        
         if (filter) {
           query = query.eq(filter.column, filter.value);
         }
-
         const { data: initialData, error } = await query;
         if (error) throw error;
-
         setData((initialData as any) || []);
       } catch (error) {
         console.error(`Error fetching initial data from ${table}:`, error);
@@ -38,8 +36,10 @@ export const useRealtime = <T extends TableName>(
     };
 
     const setupRealtimeSubscription = () => {
+      // Use random hex postfix to ensure uniqueness in edge-case re-mounts
+      const channelName = `realtime:${table}:${filter?.column ?? ''}:${filter?.value ?? ''}:${Math.random().toString(16).slice(2)}`;
       channel = supabase
-        .channel(`realtime:${table}`)
+        .channel(channelName)
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
@@ -54,7 +54,7 @@ export const useRealtime = <T extends TableName>(
           table: table,
           filter: filter ? `${filter.column}=eq.${filter.value}` : undefined
         }, (payload) => {
-          setData(prev => prev.map(item => 
+          setData(prev => prev.map(item =>
             (item as any).id === (payload.new as any).id ? payload.new as TableRow<T> : item
           ));
         })
@@ -67,6 +67,8 @@ export const useRealtime = <T extends TableName>(
           setData(prev => prev.filter(item => (item as any).id !== (payload.old as any).id));
         })
         .subscribe();
+
+      // No need to call subscribe() again on the same instance
     };
 
     fetchInitialData();
@@ -113,3 +115,4 @@ export const useUserPresence = () => {
 
   return { onlineUsers, trackUser };
 };
+
