@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Shield, Bell, Palette, Eye, Briefcase, BookOpen } from 'lucide-react';
+import AvatarUploader from '@/components/AvatarUploader';
 
 interface PrivacySettings {
   show_age: boolean;
@@ -170,6 +170,34 @@ const Settings = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Avatar upload/edit */}
+                  <AvatarUploader
+                    userId={user.id}
+                    avatarUrl={profile.avatar_url}
+                    onAvatarChange={async (url: string) => {
+                      setProfile((p) => ({ ...p, avatar_url: url }));
+                      setLoading(true);
+                      try {
+                        const { error } = await supabase
+                          .from('profiles')
+                          .update({ avatar_url: url, updated_at: new Date().toISOString() })
+                          .eq('id', user.id);
+                        if (error) throw error;
+                        toast({
+                          title: "Success",
+                          description: "Profile picture updated successfully"
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive"
+                        });
+                      }
+                      setLoading(false);
+                    }}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="full_name">Full Name</Label>
