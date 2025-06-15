@@ -5,9 +5,30 @@ import FeaturesSection from '@/components/FeaturesSection';
 import SocialFeed from '@/components/SocialFeed';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+        <Navigation />
+        <div className="pt-16 container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="text-center mb-8">
+              <Skeleton className="h-10 w-3/4 mx-auto mb-4" />
+              <Skeleton className="h-6 w-1/2 mx-auto" />
+            </div>
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">

@@ -5,9 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Heart, Upload, Users, Video, BookOpen, Briefcase, MessageCircle, Search, Calendar } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Navigation = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -59,7 +60,12 @@ const Navigation = () => {
 
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {loading ? (
+              <div className="flex items-center space-x-4">
+                <Skeleton className="h-9 w-16" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            ) : user ? (
               <div className="flex items-center space-x-4">
                 <Link to="/profile">
                   <Button variant="ghost" size="sm">
@@ -108,7 +114,12 @@ const Navigation = () => {
                 })}
                 
                 <div className="border-t pt-4 mt-4">
-                  {user ? (
+                  {loading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : user ? (
                     <div className="space-y-2">
                       <Link to="/profile" onClick={() => setIsOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start">
