@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,8 @@ import { MessageCircle, Send, Minimize2, Maximize2, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useDraggable } from '@/hooks/useDraggable';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -30,6 +31,23 @@ const CommunityChat = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const { ref } = useDraggable({ x: 24, y: window.innerHeight - 450 });
+
+  // Mobile chat toggle state (lifted out to window for both chats)
+  // @ts-ignore
+  window.__OPEN_CHAT__ = window.__OPEN_CHAT__ || "community";
+  const [visibleOnMobile, setVisibleOnMobile] = useState(() =>
+    isMobile ? window.__OPEN_CHAT__ === "community" : true
+  );
+
+  useEffect(() => {
+    if (isMobile) {
+      const handler = () => setVisibleOnMobile(window.__OPEN_CHAT__ === "community");
+      window.addEventListener("__chat_switch", handler);
+      return () => window.removeEventListener("__chat_switch", handler);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -129,13 +147,27 @@ const CommunityChat = () => {
 
   if (!user) return null;
 
+  // Both minimized and closed state suppressed on mobile if not shown
+  if (isMobile && !visibleOnMobile) return null;
+
+  // Mobile styles: docked to bottom, full width. Desktop: floating and draggable.
+  const containerClass = isMobile
+    ? "fixed bottom-0 left-0 w-full max-w-none h-[350px] z-50 bg-white rounded-t-xl shadow-2xl border-t"
+    : "fixed bottom-4 left-4 w-80 h-96 shadow-xl z-50 flex flex-col bg-white rounded-xl";
+
   return (
     <>
-      {/* Chat Toggle Button */}
-      {!isOpen && (
+      {/* Chat Toggle Button (only visible if closed AND (desktop OR current toggle on mobile)) */}
+      {!isOpen && (!isMobile || (isMobile && window.__OPEN_CHAT__ !== "community")) && (
         <Button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 left-4 rounded-full w-14 h-14 p-0 bg-blue-600 hover:bg-blue-700 shadow-lg z-50"
+          onClick={() => {
+            setIsOpen(true);
+            if (isMobile) {
+              window.__OPEN_CHAT__ = "community";
+              window.dispatchEvent(new CustomEvent("__chat_switch"));
+            }
+          }}
+          className={`fixed ${isMobile ? "bottom-20 left-1/2 -translate-x-1/2" : "bottom-4 left-4"} rounded-full w-14 h-14 p-0 bg-blue-600 hover:bg-blue-700 shadow-lg z-50`}
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
@@ -143,7 +175,19 @@ const CommunityChat = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-4 left-4 w-80 h-96 shadow-xl z-50 flex flex-col">
+        <div
+          ref={isMobile ? undefined : ref}
+          className={containerClass}
+          style={
+            isMobile
+              ? { transform: "none" }
+              : {}
+          }
+        >
+          {/* Drag handle for desktop */}
+          {!isMobile && (
+            <div className="drag-handle cursor-move w-full h-5 rounded-t-xl flex items-center px-2 bg-blue-50" />
+          )}
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -162,7 +206,14 @@ const CommunityChat = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    // On mobile: remove toggle state
+                    if (isMobile) {
+                      window.__OPEN_CHAT__ = null;
+                      window.dispatchEvent(new CustomEvent("__chat_switch"));
+                    }
+                  }}
                   className="h-6 w-6 p-0"
                 >
                   <X className="h-3 w-3" />
@@ -216,7 +267,37 @@ const CommunityChat = () => {
               </form>
             </CardContent>
           )}
-        </Card>
+        </div>
+      )}
+
+      {/* Mobile Chat Switcher Bar */}
+      {isMobile && isOpen && (
+        <div className="fixed left-0 right-0 bottom-[350px] flex z-50 justify-center">
+          <div className="inline-flex rounded-full shadow-lg bg-white/80 border">
+            <Button
+              size="sm"
+              variant={visibleOnMobile ? "default" : "outline"}
+              onClick={() => {
+                window.__OPEN_CHAT__ = "community";
+                window.dispatchEvent(new CustomEvent("__chat_switch"));
+              }}
+              className="rounded-full"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                window.__OPEN_CHAT__ = "friends";
+                window.dispatchEvent(new CustomEvent("__chat_switch"));
+              }}
+              className="rounded-full"
+            >
+              <Users className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
     </>
   );
