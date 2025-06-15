@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Smile, Gift, Heart, ThumbsUp, Fire, Star } from 'lucide-react';
+// Removed unused Lucide imports
 
 interface ChatOptionsProps {
   onQuickMessage: (message: string) => void;
