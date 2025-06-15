@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, Send, Minimize2, Maximize2, X } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,12 @@ interface Message {
     full_name: string;
     avatar_url: string;
   };
+}
+
+declare global {
+  interface Window {
+    __OPEN_CHAT__?: string | null;
+  }
 }
 
 const CommunityChat = () => {

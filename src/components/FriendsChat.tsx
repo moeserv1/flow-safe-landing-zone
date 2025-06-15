@@ -17,6 +17,12 @@ interface Friend {
   last_seen: string;
 }
 
+declare global {
+  interface Window {
+    __OPEN_CHAT__?: string | null;
+  }
+}
+
 const FriendsChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
