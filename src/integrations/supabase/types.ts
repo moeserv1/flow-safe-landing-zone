@@ -914,7 +914,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      community_messages_with_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          message: string | null
+          sender_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_age: {

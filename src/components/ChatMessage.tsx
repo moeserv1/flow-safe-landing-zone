@@ -17,9 +17,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { Database } from '@/integrations/supabase/types';
+// The auto-generated Database types are stale, so we're removing this import.
+// import type { Database } from '@/integrations/supabase/types';
 
-type MessageWithProfile = Database['public']['Views']['community_messages_with_profiles']['Row'];
+// This was causing an error because the view type was not yet generated.
+// type MessageWithProfile = Database['public']['Views']['community_messages_with_profiles']['Row'];
+
+// We are defining the type manually as a workaround.
+type MessageWithProfile = {
+  id: string | null;
+  created_at: string | null;
+  sender_id: string | null;
+  message: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+};
 
 interface ChatMessageProps {
   message: MessageWithProfile;

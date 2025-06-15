@@ -14,7 +14,14 @@ import ChatMessage from './ChatMessage'; // Import the new component
 import type { Database } from '@/integrations/supabase/types';
 
 // Use a view for messages with profiles to get types
-type MessageWithProfile = Database['public']['Views']['community_messages_with_profiles']['Row'];
+type MessageWithProfile = {
+  id: string | null;
+  created_at: string | null;
+  sender_id: string | null;
+  message: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+};
 
 declare global {
   interface Window {
@@ -84,7 +91,7 @@ const CommunityChat = () => {
         left join profiles p on cm.sender_id = p.id;
     */
     const { data, error } = await supabase
-      .from('community_messages_with_profiles')
+      .from('community_messages_with_profiles' as any) // Using 'as any' to bypass stale types
       .select('*')
       .order('created_at', { ascending: true })
       .limit(50);
@@ -109,13 +116,13 @@ const CommunityChat = () => {
         },
         async (payload) => {
           const { data } = await supabase
-            .from('community_messages_with_profiles')
+            .from('community_messages_with_profiles' as any) // Using 'as any' to bypass stale types
             .select('*')
             .eq('id', payload.new.id)
             .single();
 
           if (data) {
-            setMessages(prev => [...prev, data]);
+            setMessages(prev => [...prev, data as MessageWithProfile]);
           }
         }
       )
