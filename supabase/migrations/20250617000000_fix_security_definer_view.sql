@@ -1,9 +1,11 @@
 -- Fix SECURITY DEFINER issue for community_messages_with_profiles view
 -- This migration ensures the view uses SECURITY INVOKER to properly enforce RLS policies
 
--- Drop and recreate the view with explicit SECURITY INVOKER
-DROP VIEW IF EXISTS public.community_messages_with_profiles;
+-- First, drop the view completely to remove any SECURITY DEFINER settings
+DROP VIEW IF EXISTS public.community_messages_with_profiles CASCADE;
 
+-- Recreate the view with explicit SECURITY INVOKER (not SECURITY DEFINER)
+-- This ensures RLS policies are enforced for the querying user, not the view creator
 CREATE VIEW public.community_messages_with_profiles
 WITH (security_invoker = true) AS
 SELECT
@@ -14,9 +16,30 @@ SELECT
   p.full_name,
   p.avatar_url
 FROM
-  community_messages cm
+  public.community_messages cm
 LEFT JOIN
-  profiles p ON cm.sender_id = p.id;
+  public.profiles p ON cm.sender_id = p.id;
+
+-- Alternative syntax that's more explicit about security (PostgreSQL 15+)
+-- If the above doesn't work, uncomment the following:
+/*
+DROP VIEW IF EXISTS public.community_messages_with_profiles CASCADE;
+CREATE VIEW public.community_messages_with_profiles AS
+SELECT
+  cm.id,
+  cm.sender_id,
+  cm.message,
+  cm.created_at,
+  p.full_name,
+  p.avatar_url
+FROM
+  public.community_messages cm
+LEFT JOIN
+  public.profiles p ON cm.sender_id = p.id;
+
+-- Explicitly set security invoker after creation
+ALTER VIEW public.community_messages_with_profiles SET (security_invoker = true);
+*/
 
 -- Grant appropriate permissions to authenticated users
 GRANT SELECT ON public.community_messages_with_profiles TO authenticated;

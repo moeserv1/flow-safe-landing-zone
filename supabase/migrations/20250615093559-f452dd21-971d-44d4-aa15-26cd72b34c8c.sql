@@ -1,5 +1,6 @@
 
 -- Create view with explicit SECURITY INVOKER to ensure proper RLS enforcement
+-- This prevents SECURITY DEFINER issues and ensures RLS policies are enforced
 CREATE OR REPLACE VIEW public.community_messages_with_profiles
 WITH (security_invoker = true) AS
 SELECT
@@ -10,6 +11,6 @@ SELECT
   p.full_name,
   p.avatar_url
 FROM
-  community_messages cm
+  public.community_messages cm
 LEFT JOIN
-  profiles p ON cm.sender_id = p.id;
+  public.profiles p ON cm.sender_id = p.id;
