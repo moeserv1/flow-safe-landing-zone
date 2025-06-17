@@ -28,8 +28,8 @@ $$ LANGUAGE plpgsql SECURITY INVOKER;
 -- 2. Ensure the community_messages_with_profiles view uses SECURITY INVOKER
 DROP VIEW IF EXISTS public.community_messages_with_profiles CASCADE;
 
-CREATE VIEW public.community_messages_with_profiles 
-SECURITY INVOKER AS
+CREATE VIEW public.community_messages_with_profiles
+WITH (security_invoker = true) AS
 SELECT
   cm.id,
   cm.sender_id,
@@ -41,6 +41,9 @@ FROM
   public.community_messages cm
 LEFT JOIN
   public.profiles p ON cm.sender_id = p.id;
+
+-- Explicitly ensure SECURITY INVOKER is set to eliminate any SECURITY DEFINER warnings
+ALTER VIEW public.community_messages_with_profiles SET (security_invoker = true);
 
 -- 3. Grant appropriate permissions
 GRANT SELECT ON public.community_messages_with_profiles TO authenticated;

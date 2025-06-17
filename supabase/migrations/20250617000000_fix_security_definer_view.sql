@@ -7,7 +7,7 @@ DROP VIEW IF EXISTS public.community_messages_with_profiles CASCADE;
 -- Recreate the view with explicit SECURITY INVOKER (not SECURITY DEFINER)
 -- This ensures RLS policies are enforced for the querying user, not the view creator
 CREATE VIEW public.community_messages_with_profiles
-SECURITY INVOKER AS
+WITH (security_invoker = true) AS
 SELECT
   cm.id,
   cm.sender_id,
@@ -19,6 +19,9 @@ FROM
   public.community_messages cm
 LEFT JOIN
   public.profiles p ON cm.sender_id = p.id;
+
+-- Explicitly ensure SECURITY INVOKER is set
+ALTER VIEW public.community_messages_with_profiles SET (security_invoker = true);
 
 -- Alternative syntax that's more explicit about security (PostgreSQL 15+)
 -- If the above doesn't work, uncomment the following:

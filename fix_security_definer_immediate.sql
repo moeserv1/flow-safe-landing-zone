@@ -47,6 +47,9 @@ FROM
 LEFT JOIN
   public.profiles p ON cm.sender_id = p.id;
 
+-- Step 2.1: Double-ensure with ALTER command to force SECURITY INVOKER
+ALTER VIEW public.community_messages_with_profiles SET (security_invoker = true);
+
 -- Step 3: Grant permissions
 GRANT SELECT ON public.community_messages_with_profiles TO authenticated;
 GRANT SELECT ON public.community_messages_with_profiles TO anon;
@@ -138,15 +141,25 @@ COMMENT ON FUNCTION public.calculate_age(text) IS
 COMMENT ON VIEW public.community_messages_with_profiles IS
 'Community messages with user profiles. Uses SECURITY INVOKER to ensure Row Level Security policies are enforced for each querying user, preventing unauthorized data access.';
 
--- Step 9: Verification queries (uncomment to run):
+-- Step 9: Final verification to ensure the warning disappears
+SELECT
+  'FINAL VERIFICATION:' as check_type,
+  viewname,
+  CASE
+    WHEN definition LIKE '%security_invoker%' OR definition LIKE '%SECURITY INVOKER%'
+    THEN 'SECURITY INVOKER CONFIRMED ✓ - Warning should be gone'
+    WHEN definition LIKE '%security_definer%' OR definition LIKE '%SECURITY DEFINER%'
+    THEN 'STILL HAS SECURITY DEFINER ❌ - Warning will persist'
+    ELSE 'DEFAULT (should be INVOKER) - Warning may persist'
+  END as security_status,
+  definition
+FROM pg_views
+WHERE viewname = 'community_messages_with_profiles';
+
+-- Additional verification queries (uncomment to run):
 -- SELECT 'All security fixes applied successfully!' as status;
 --
 -- -- Check for any remaining SECURITY DEFINER functions (should be empty)
 -- SELECT 'SECURITY DEFINER functions (should be empty):' as check_type, proname
 -- FROM pg_proc
 -- WHERE prosecdef = true AND pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public');
---
--- -- Verify view security
--- SELECT 'View security:' as check_type, viewname,
---   CASE WHEN definition LIKE '%security_invoker%' THEN 'SECURE ✓' ELSE 'CHECK NEEDED ⚠️' END as status
--- FROM pg_views WHERE viewname = 'community_messages_with_profiles';
