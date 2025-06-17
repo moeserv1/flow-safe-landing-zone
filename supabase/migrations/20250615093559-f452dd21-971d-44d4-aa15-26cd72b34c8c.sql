@@ -1,5 +1,7 @@
 
-CREATE OR REPLACE VIEW public.community_messages_with_profiles AS
+-- Create view with explicit SECURITY INVOKER to ensure proper RLS enforcement
+CREATE OR REPLACE VIEW public.community_messages_with_profiles
+WITH (security_invoker = true) AS
 SELECT
   cm.id,
   cm.sender_id,
