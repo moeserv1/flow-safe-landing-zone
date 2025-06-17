@@ -2,7 +2,7 @@
 -- Create view with explicit SECURITY INVOKER to ensure proper RLS enforcement
 -- This prevents SECURITY DEFINER issues and ensures RLS policies are enforced
 CREATE OR REPLACE VIEW public.community_messages_with_profiles
-WITH (security_invoker = true) AS
+SECURITY INVOKER AS
 SELECT
   cm.id,
   cm.sender_id,

@@ -7,7 +7,7 @@ DROP VIEW IF EXISTS public.community_messages_with_profiles CASCADE;
 -- Recreate the view with explicit SECURITY INVOKER (not SECURITY DEFINER)
 -- This ensures RLS policies are enforced for the querying user, not the view creator
 CREATE VIEW public.community_messages_with_profiles
-WITH (security_invoker = true) AS
+SECURITY INVOKER AS
 SELECT
   cm.id,
   cm.sender_id,
